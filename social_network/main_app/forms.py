@@ -54,13 +54,6 @@ class UserSettingsForm(forms.ModelForm):
         model = CustomUser
         fields = ('username', 'first_name', 'last_name', 'image')
 
-    # def clean(self):
-    #     cleaned_data = super().clean()
-    #     username = cleaned_data['username']
-    #
-    #     if User.objects.filter(username=username).exists():
-    #         raise ValidationError('Такое имя пользователя занято.')
-
 
 class PostCreatingForm(forms.ModelForm):
     simple_captcha = CaptchaField(label=captcha_text)
