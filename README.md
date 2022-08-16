@@ -18,6 +18,14 @@ Go into dir social_network
 
 `cd social_network`
 
+Make migrations
+
+`python manage.py makemigrations`
+
+Apply them
+
+`python manage.py migrate`
+
 And run testing server
 
 `python manage.py runserver`
