@@ -1,0 +1,140 @@
+{% extends 'base_template.html' %}
+
+{% load static %}
+
+{% block title %}
+            {{ profile.username }}
+{% endblock %}
+
+{% block other_styles %}
+    <link rel="stylesheet" type="text/css" href="{% static 'userpage.css' %}">
+{% endblock %}
+
+{% block content %}
+        <div class="container">
+            <br>
+                <img src="{{ profile.image.url }}" class="user_img" align="left">
+                    <p class="user_info">
+                        <p>
+                            <a href="{{ profile.get_absolute_url }}" class="link_user" style="color: black; text-decoration: none;">@{{ profile.username }}</a>
+            {% if profile.first_name or profile.last_name %}
+                <br><br>
+            {% endif %}
+                            {% if profile.first_name %}
+                                        {{ profile.first_name }}
+                                {% endif %}
+
+                                {% if profile.last_name %}
+                                    {{ profile.last_name }}
+                                {% endif %}
+                                <br>
+
+                                {% if profile.is_online or profile.username == 'roddy' %}
+                                        <p class="online_p">
+                                        online
+                                        </p>
+                                {% else %}
+                                    <p class="last_visit">
+                                        Последний визит
+                                        {{ profile.last_online }}
+                                    </p>
+                                {% endif %}
+                            {% if own_profile %}
+                                    Это ваша страница
+                                    <br><br>
+                            {% endif %}
+                                Зарегистрировался {{ profile.date_joined }}
+                                <br>
+            <br>
+                                {% if friend_amount > 0 %}
+                                <a href="{% url 'main:friends_page' profile.username %}" style="color: #0B66E3; text-decoration: none;"> Друзья: {{ friend_amount }} </a>
+                                {% else %}
+                                Нет друзей
+                                {% endif %}
+                                <br>
+            <br>
+                            {% if request.user != profile %}
+                                {% if not in_friendship and not already_requested and not requested_to_you %}
+                                    <form method="post" action="{% url 'main:create_friend_request' %}"> {% csrf_token %}
+                                        <input type="hidden" name="user_id" value="{{ profile.pk }}">
+                                        <input type="hidden" name="current_path" value="{{ request.path }}">
+                                        <button class="btn btn-success" type="submit">
+                                            Добавить в друзья
+                                        </button>
+                                    </form>
+
+                                {% elif in_friendship %}
+                                    <form method="post" action="{% url 'main:delete_friend' %}"> {% csrf_token %}
+                                        <input type="hidden" name="user_id" value="{{ profile.pk }}">
+                                        <input type="hidden" name="current_path" value="{{ request.path }}">
+                                        <button class="btn btn-primary">Уже в друзьях</button>
+                                    </form>
+
+                                {% elif already_requested  %}
+                                    {% if request_status == 'c' %}
+                                        <form method="post" action="{% url 'main:cancel_friend_request' %}"> {% csrf_token %}
+                                            <input type="hidden" name="user_id" value="{{ profile.pk }}">
+                                            <input type="hidden" name="current_path" value="{{ request.path }}">
+                                            <button class="btn btn-success" type="submit">
+                                                Заявка отправлена
+                                            </button>
+                                        </form>
+                                    {% elif request_status == 'd' %}
+                                        Пользователь отклонил вашу заявку
+                                    {% endif %}
+
+                                {% elif requested_to_you %}
+                                    <form method="post" action="{% url 'main:accept_friend_request' %}"> {% csrf_token %}
+                                        <input type="hidden" name="user_id" value="{{ profile.pk }}">
+                                        <input type="hidden" name="current_path" value="{{ request.path }}">
+                                        <button class="btn btn-success btn-sm" type="submit" style="width:150px; border-radius:0px;">
+                                            Принять заявку
+                                        </button>
+                                    </form>
+                                    <form method="post" action="{% url 'main:deny_friend_request' %}"> {% csrf_token %}
+                                        <input type="hidden" name="user_id" value="{{ profile.pk }}">
+                                        <input type="hidden" name="current_path" value="{{ request.path }}">
+                                        <button class="btn btn-danger btn-sm" type="submit" style="width: 150px; border-radius: 0px;">
+                                            Отклонить заявку
+                                        </button>
+                                    </form>
+
+                                {% endif %}
+                            {% endif %}
+                        </p>
+                </p>
+        </div>
+        <br>
+        {% if own_profile %}
+            {% if not posts %}
+                <p align="center"><a href="{% url 'main:create_post' %}" style="color: black; text-decoration: none;">Добавить первую запись</a></p>
+            {% else %}
+                <p align="center"><a href="{% url 'main:create_post' %}" style="color: black; text-decoration: none;">Добавить запись</a></p>
+            {% endif %}
+        {% endif %}
+        {% if posts %}
+            <div class="container" style="display: table; padding-top: 70px; align-items:flex-start; padding-left: 100px;">
+                {% for post in posts %}
+                <a href="{{ post.owner.get_absolute_url }}" style="color: black; text-decoration: none;">
+                <img src="{{ post.owner.image.url }}" style="border-radius: 100px; width: 70px;
+    height: 70px;">  @{{ post.owner.username }} </a>
+                <a href="{{ post.get_absolute_url }}" style="color: black; text-decoration: none;">
+                    {% if post.title %}
+                <h4 align="center" style="padding-right: 100px;">{{ post.title }}</h4>
+                    {% endif %}
+                {% if post.description %}
+                <p align="center" style="padding-right: 100px;">
+                    {{ post.description }}
+                    </p>
+                {% endif %}
+                <br>
+                <p align="right" style="padding-right: 100px;">
+                    {{ post.date_of_creating }}
+                    </p>
+                    </a>
+                <br><br>
+                {% endfor %}
+                 </div>
+<br>
+        {% endif %}
+{% endblock %}

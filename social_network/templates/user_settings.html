@@ -1,0 +1,26 @@
+{% extends 'base_template.html' %}
+
+{% block other_styles %}
+    {% load crispy_forms_tags %}
+{% endblock %}
+
+{% block title %} Настройки {% endblock %}
+
+{% block content %}
+<div class="container" style="margin: 0 auto; display: flex; align-items: center;
+  justify-content: center;
+  text-align: center;
+  height: 450px;
+  max-height: 800px;
+  width: 400px;
+  background-color: white;
+  border-radius: 10px;">
+    <form method="post" enctype="multipart/form-data" style="max-width: 350px; width: 350px;"> {% csrf_token %}
+        {{ form|crispy }}
+        <br>
+        <a href="{% url 'main:change_password_page' %}" style="color: #0B66E3; text-decoration: none;"> Изменить пароль </a>
+        <br><br>
+        <button class="btn btn-success">Применить</button>
+    </form>
+</div>
+{% endblock %}

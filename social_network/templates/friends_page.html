@@ -1,0 +1,31 @@
+{% extends 'base_template.html' %}
+
+{% block other_styles %}
+    {% load static %}
+    {% load cache %}
+    <link rel="stylesheet" type="text/css" href="{% static 'friends_page.css' %}">
+{% endblock %}
+
+{% block title %} Друзья {{ profile.username }} {% endblock %}
+
+{% block content %}
+    {% if friends %}
+        <h2 align="center"> Друзья {{ profile.username }}</h2>
+    <br><br>
+        <div class="container">
+                    {% for friend in friends %}
+            <br>
+
+            <a href="{{ friend.get_absolute_url }}">
+                <img src="{{ friend.image.url }}" class="friend_image"/>
+                {{ friend.username }}
+            </a>
+            <br>
+            {% endfor %}
+        </div>
+
+    {% else %}
+        <h1 align="center">У этого пользователя нет друзей</h1>
+    {% endif %}
+
+{% endblock %}

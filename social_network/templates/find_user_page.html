@@ -1,0 +1,53 @@
+{% extends 'base_template.html' %}
+
+{% block title %} Найти пользователя {% endblock %}
+
+{% block other_styles %}
+    {% load crispy_forms_tags %}
+{% endblock %}
+
+{% block content %}
+    <div class="container" style="
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: white;
+    width: 400px;
+    height: 200px;
+    text-align: center;
+    border-radius: 10px;">
+        <form method="post" style="max-width: 350px; width: 350px;">{% csrf_token %}
+            {{ form|crispy }}
+            <br>
+            <button type="submit" class="btn btn-success"
+            style="top: 50%;
+                   left: 50%;">Найти</button>
+        </form>
+    </div>
+<br>
+<p style="text-align: center;">
+{% if user_exists %}
+        {% if more_than_one %}
+        Примерные совпадения:
+        {% else %}
+        Примерное совпадение:
+        {% endif %}
+</p>
+<div class="container" style="margin: 0 auto; text-align: center; background-color: white; width: 400px;
+border-radius: 10px;">
+            <p style="text-align: left; padding-bottom: 20px;">
+            {% for profile in users %}
+                <br>
+                <a href="{{ profile.get_absolute_url }}" style="text-decoration: none; color: black;">
+                    <img src="{{ profile.image.url }}" style="width: 100px; height: 100px; border-radius: 100px;">
+                        {{ profile.username }}
+                    </a>
+                <br>
+            {% endfor %}
+            </p>
+    {% else %}
+         Пользователь не найден
+    {% endif %}
+</div>
+{% endblock %}
