@@ -12,7 +12,7 @@ Then, install dependencies
 
 `pip install -r requirements.txt`
 
-Set .env settings for secret key and database
+Set .env settings
 
 Go into dir social_network
 
