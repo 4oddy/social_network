@@ -6,7 +6,7 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-dotenv.load_dotenv('.env')
+dotenv.load_dotenv(BASE_DIR / '.env')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
@@ -16,7 +16,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-SEND_EMAILS = True
+SEND_EMAILS = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -151,12 +151,13 @@ LOGOUT_REDIRECT_URL = '/'
 # CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/0"
 
 # Celery with RabbitMQ
-CELERY_BROKER_URL = 'amqp://localhost:5672'
-CELERY_RESULT_BACKEND = 'rpc://'
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL')
+CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND')
 
 # Email settings
 
-MY_EMAIL = 'instametr.site2123@internet.ru'
+MY_EMAIL = os.environ.get('MY_EMAIL')
+MY_EMAIL_PASSWORD = os.environ.get('MY_EMAIL_PASSWORD')
 
 DEFAULT_FROM_EMAIL = MY_EMAIL
 
@@ -167,7 +168,7 @@ EMAIL_PORT = 465
 EMAIL_USE_SSL = True
 
 EMAIL_HOST_USER = MY_EMAIL
-EMAIL_HOST_PASSWORD = 'KwduC456Qaj8sjSWC5Hm'
+EMAIL_HOST_PASSWORD = MY_EMAIL_PASSWORD
 
 DEFAULT_EMAIL_LOGIN_SUBJECT = 'Вход в аккаунт'
 DEFAULT_EMAIL_LOGIN_BODY = 'Здравствуйте, {name}\n\nВ ваш аккаунт на сайте ИНСТАМЕТР был выполнен вход\n\n' \
