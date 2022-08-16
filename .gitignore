@@ -1,4 +1,4 @@
 .idea
 venv
-social_network/images/user_images/*
+social_network/images/user_images/**
 __pycache__/
