@@ -1,3 +1,4 @@
+python-dotenv==0.20.0
 Django==4.0.4
 django-bootstrap4==22.1
 django-cleanup==6.0.0

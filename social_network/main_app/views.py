@@ -154,12 +154,6 @@ class UserSettingsPage(LoginRequiredMixin, UpdateView):
 
         return super().post(request, *args, **kwargs)
 
-    # def form_valid(self, form):
-    #     username = form.cleaned_data['username']
-    #     user = self.request.user
-    #     user.username = username
-    #     user.save()
-
     def get_success_url(self):
         return reverse('main:user_page', kwargs={'username': self.request.user.username})
 
