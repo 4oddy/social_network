@@ -1,4 +1,6 @@
 .idea
 venv
 social_network/images/user_images/**
-__pycache__/
+social_network/first_site/__pycache__/**
+social_network/main_app/__pycache__/**
+social_network/test.env/
