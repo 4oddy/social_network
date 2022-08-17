@@ -45,6 +45,13 @@ class CustomUser(AbstractUser):
             return (timezone.now() - self.last_online) < timezone.timedelta(minutes=2)
         return False
 
+    def clean(self):
+        if len(self.first_name) > 50:
+            raise ValidationError({'first_name': 'Максимальная длина: 50'})
+
+        if len(self.last_name) > 50:
+            raise ValidationError({'last_name': 'Максимальная длина: 50'})
+
 
 class FriendRequest(models.Model):
     request_statuses = (
@@ -89,7 +96,7 @@ class FriendRequest(models.Model):
 
 class Post(models.Model):
     title = models.CharField(verbose_name='Заголовок', max_length=50, null=True, blank=True)
-    description = models.CharField(verbose_name='Текст', max_length=300, null=True, blank=True)
+    description = models.CharField(verbose_name='Текст', max_length=150, null=True, blank=True)
     owner = models.ForeignKey(CustomUser, verbose_name='Автор',
                               null=False, blank=False, on_delete=models.CASCADE, related_name='posts')
     post_uuid = models.CharField(max_length=23, unique=True, default=None)
@@ -118,6 +125,12 @@ class Post(models.Model):
     def clean(self):
         if not self.title and not self.description:
             raise ValidationError('Пост не может быть пустым')
+
+        if len(str(self.title)) > 50:
+            raise ValidationError('Максимальная длина: 50')
+
+        if len(str(self.description)) > 150:
+            raise ValidationError('Максимальная длина: 150')
 
     def get_absolute_url(self):
         return reverse('main:post_page', kwargs={'post_uuid': self.post_uuid})

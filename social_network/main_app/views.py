@@ -97,7 +97,7 @@ class UserProfilePage(LoginRequiredMixin, TemplateView):
         posts = Post.objects.select_related('owner').filter(owner=user)
 
         if posts.exists():
-            context['posts'] = posts
+            context['posts'] = posts[::-1]
 
         return context
 

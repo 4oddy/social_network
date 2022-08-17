@@ -7,3 +7,6 @@ def custom_username_validator(username):
 
     if len(username) < 4:
         raise ValidationError('Минимальная длина: 4')
+
+    if len(username) > 50:
+        raise ValidationError('Максимальная длина: 50')
