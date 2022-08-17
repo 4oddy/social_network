@@ -1,7 +1,6 @@
 import json
 
-from channels.exceptions import DenyConnection
-from channels.generic.websocket import AsyncWebsocketConsumer, WebsocketConsumer
+from channels.generic.websocket import AsyncWebsocketConsumer
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -42,4 +41,3 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps({
             'message': message
         }))
-
