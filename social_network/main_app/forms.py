@@ -46,12 +46,11 @@ class CustomAuthenticationForm(AuthenticationForm):
 
 
 class UserSettingsForm(forms.ModelForm):
-    username = forms.CharField(label='Имя пользователя', max_length=50, min_length=4)
     image = forms.ImageField(label='Фото профиля', widget=forms.FileInput)
 
     class Meta:
         model = CustomUser
-        fields = ('username', 'first_name', 'last_name', 'image')
+        fields = ('first_name', 'last_name', 'image')
 
 
 class PostCreatingForm(forms.ModelForm):

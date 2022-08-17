@@ -33,6 +33,7 @@ INSTALLED_APPS = [
 
     # project apps
     'main_app.apps.MainAppConfig',
+    'chat_app.apps.ChatAppConfig',
 
     # another apps
     'crispy_forms',
