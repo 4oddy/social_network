@@ -218,8 +218,8 @@ class CreateFriendRequest(LoginRequiredMixin, View):
         FriendRequest.objects.create(from_user_id=data['from_user_id'], to_user_id=data['to_user_id'])
 
         if settings.SEND_EMAILS:
-            from_user = User.objects.filter(pk=data['from_user_id']).first()
-            to_user = User.objects.get(pk=data['to_user_id']).first()
+            from_user = get_object_or_404(User, pk=data['from_user_id'])
+            to_user = get_object_or_404(User, pk=data['to_user_id'])
 
             name = to_user.first_name
 

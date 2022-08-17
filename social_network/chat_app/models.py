@@ -12,7 +12,6 @@ class Message(models.Model):
                                related_name='sent_messages')
     receiver = models.ForeignKey(User, verbose_name='Получатель', null=True, on_delete=models.SET_NULL,
                                  related_name='received_messages')
-
     date_of_sending = models.DateTimeField(auto_now_add=True)
     date_of_updating = models.DateTimeField(auto_now=True)
 

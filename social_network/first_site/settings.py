@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'crispy_forms',
     'captcha',
     'django_cleanup.apps.CleanupConfig',
+    'channels'
 ]
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
@@ -75,7 +76,19 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'first_site.wsgi.application'
+ASGI_APPLICATION = 'first_site.asgi.application'
 
+CHANNEL_REDIS_HOST = 'redis://127.0.0.1:6379/0'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
+            "symmetric_encryption_keys": [SECRET_KEY],
+        },
+    },
+}
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
