@@ -36,6 +36,10 @@ It's not all. If SEND_EMAILS in first_site/setting.py is True, you have to run c
 
 This will start a RabbitMQ container listening on the default port of 5672.
 
+`docker run --name some-redis -d redis`
+
+This will start a Redis container on 127.0.0.1:6379.
+
 `celery -A first_site worker -P eventlet --loglevel info`
 
 This will start a celery worker. To enter this command, you have to be in social_network dir
