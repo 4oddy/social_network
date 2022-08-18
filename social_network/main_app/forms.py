@@ -1,33 +1,26 @@
 from django import forms
-from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, UsernameField, PasswordResetForm
-from captcha.fields import CaptchaField
 
 from .models import CustomUser, Post
 from .validators import custom_username_validator
 from .tasks import send_password_reset_email
-
-User = get_user_model()
-
-captcha_text = 'Подтвердите, что вы не робот'
+from custom.forms import BaseForm
 
 
 class FindUserForm(forms.Form):
     username = forms.CharField(label='Имя пользователя', max_length=150)
 
 
-class CustomUserCreationForm(UserCreationForm):
+class CustomUserCreationForm(UserCreationForm, BaseForm):
     username = forms.CharField(label='Имя пользователя', max_length=50, min_length=4,
                                validators=[custom_username_validator])
     password1 = forms.CharField(label='Пароль', widget=forms.PasswordInput)
     password2 = forms.CharField(label='Подтверждение пароля', widget=forms.PasswordInput)
     image = forms.ImageField(label='Фото профиля', required=False)
 
-    simple_captcha = CaptchaField(label=captcha_text)
-
     class Meta:
         model = CustomUser
-        fields = ('username', 'email', 'image', 'first_name', 'last_name', 'password1', 'password2', 'simple_captcha')
+        fields = ('username', 'email', 'image', 'first_name', 'last_name', 'password1', 'password2')
 
 
 class CustomAuthenticationForm(AuthenticationForm):
@@ -54,12 +47,10 @@ class UserSettingsForm(forms.ModelForm):
         fields = ('first_name', 'last_name', 'image')
 
 
-class PostCreatingForm(forms.ModelForm):
-    simple_captcha = CaptchaField(label=captcha_text)
-
+class PostCreatingForm(BaseForm):
     class Meta:
         model = Post
-        fields = ('title', 'description', 'simple_captcha')
+        fields = ('title', 'description')
 
 
 class CustomPasswordResetForm(PasswordResetForm):

@@ -8,6 +8,7 @@ from django.core.validators import EmailValidator
 from django.shortcuts import reverse
 
 from .validators import custom_username_validator
+from .exceptions import SelfRequestedException
 
 import uuid
 
@@ -90,7 +91,7 @@ class FriendRequest(models.Model):
         self, force_insert=False, force_update=False, using=None, update_fields=None
     ):
         if self.from_user == self.to_user:
-            return
+            raise SelfRequestedException('Пользователь не может отправить заявку в друзья самому себе')
         return super(FriendRequest, self).save()
 
 

@@ -39,7 +39,7 @@ def get_username_from_kwargs(kwargs):
 
 
 def create_friend_request(from_user, to_user_id):
-    FriendRequest.objects.create(from_user=from_user, to_user_id=to_user_id)
+    request = FriendRequest.objects.create(from_user=from_user, to_user_id=to_user_id)
 
     if settings.SEND_EMAILS:
         to_user = get_object_or_404(User, pk=to_user_id)
@@ -54,6 +54,8 @@ def create_friend_request(from_user, to_user_id):
                                                                        date=get_current_date())
 
         send_email.delay(subject=settings.DEFAULT_EMAIL_FRIEND_REQUEST_SUBJECT, body=email_body, to=[to_user.email])
+
+    return request
 
 
 def send_email_login(user):
