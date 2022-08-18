@@ -1,0 +1,34 @@
+<div class="container" style="padding-top: 50px; align-items:flex-start; padding-left: 100px;
+                                                width: 1200px; word-wrap: break-word;
+                    background-color: white;
+    border-radius: 10px;
+    padding-bottom: 40px;
+    margin: 0 auto;
+    height: auto;">
+                <a href="{{ post.owner.get_absolute_url }}" style="color: black; text-decoration: none;">
+                <img src="{{ post.owner.image.url }}" style="border-radius: 100px; width: 70px;
+    height: 70px;">  @{{ post.owner.username }} </a>
+
+                    <p align="right" style="padding-right: 100px; word-spacing: 15px;">
+                            {% if allowed_to_edit %}
+                    <a href="{% url 'main:delete_post_page' post.post_uuid %}" style="text-decoration: none; color: #0B66E3;"> Удалить
+                    </a>
+                        <a href="{% url 'main:edit_post_page' post.post_uuid %}" style="text-decoration: none; color: #0B66E3;">Редактировать</a>
+                        {% endif %}
+                        </p>
+
+                <a href="{{ post.get_absolute_url }}" style="color: black; text-decoration: none;">
+                    {% if post.title %}
+                <h4 align="center" style="padding-right: 100px;">{{ post.title }}</h4>
+                    {% endif %}
+                {% if post.description %}
+                <p align="center" style="padding-right: 100px;">
+                    {{ post.description }}
+                    </p>
+                {% endif %}
+                <br>
+                <p align="right" style="padding-right: 100px;">
+                    {{ post.date_of_creating }}
+                    </p>
+                    </a>
+                    </div>

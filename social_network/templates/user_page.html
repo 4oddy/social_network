@@ -115,27 +115,8 @@
         {% if posts %}
 
                 {% for post in posts %}
-                <div class="container" style="padding-top: 70px; align-items:flex-start; padding-left: 100px;
-                                                width: 1200px; word-wrap: break-word;">
-                <a href="{{ post.owner.get_absolute_url }}" style="color: black; text-decoration: none;">
-                <img src="{{ post.owner.image.url }}" style="border-radius: 100px; width: 70px;
-    height: 70px;">  @{{ post.owner.username }} </a>
-                <a href="{{ post.get_absolute_url }}" style="color: black; text-decoration: none;">
-                    {% if post.title %}
-                <h4 align="center" style="padding-right: 100px;">{{ post.title }}</h4>
-                    {% endif %}
-                {% if post.description %}
-                <p align="center" style="padding-right: 100px;">
-                    {{ post.description }}
-                    </p>
-                {% endif %}
-                <br>
-                <p align="right" style="padding-right: 100px;">
-                    {{ post.date_of_creating }}
-                    </p>
-                    </a>
-                    </div>
-<br>
+                    {% include 'post_template.html' %}
+                    <br>
                 {% endfor %}
 <br>
         {% endif %}

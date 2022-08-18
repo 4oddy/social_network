@@ -1,34 +1,7 @@
 {% extends 'base_template.html' %}
 
-{% block title %} Пост {% endblock %}
+{% block title %} Запись {{ post.post_uuid }} {% endblock %}
 
 {% block content %}
-<!--<div class="container" style="display: table; padding-top: 70px; align-items:flex-start; padding-left: 100px; margin: 0 auto;-->
-<!--    border-radius: 10px;-->
-<!--    background-color: white;-->
-<!--    width: 1200px;-->
-<!--    word-wrap: break-word;-->
-<!--    height: 350px;-->
-<!--    max-height: 500px;">-->
-<div class="container" style="padding-top: 70px; align-items:flex-start; padding-left: 100px;
-                                                width: 1200px; word-wrap: break-word; background-color: white;
-border-radius: 10px; padding-bottom: 60px;">
-<a href="{{ post.owner.get_absolute_url }}" style="color: black; text-decoration: none;">
-                <img src="{{ post.owner.image.url }}" style="border-radius: 100px; width: 70px;
-    height: 70px;">  @{{ post.owner.username }} </a>
-                <a href="{{ post.get_absolute_url }}" style="color: black; text-decoration: none;">
-                    {% if post.title %}
-                <h4 align="center" style="padding-right: 100px;">{{ post.title }}</h4>
-                    {% endif %}
-                {% if post.description %}
-                <p align="center" style="padding-right: 100px;">
-                    {{ post.description }}
-                    </p>
-                {% endif %}
-                <br>
-                <p align="right" style="padding-right: 100px;">
-                    {{ post.date_of_creating }}
-                    </p>
-                    </a>
- </div>
+    {% include 'post_template.html' %}
 {% endblock %}

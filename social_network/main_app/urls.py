@@ -4,7 +4,8 @@ from django.contrib.auth.views import LogoutView, PasswordResetView, PasswordRes
 from .views import (UserProfilePage, MainPage, RegisterUserPage,
                     FindUserPage, CreateFriendRequest, CancelFriendRequest,
                     AcceptFriendRequest, DenyFriendRequest, DeleteFriend,
-                    FriendsListPage, CustomLoginPage, UserSettingsPage, CreatePost, PostPage)
+                    FriendsListPage, CustomLoginPage, UserSettingsPage, CreatePost,
+                    PostPage, DeletePostPage, EditPostPage)
 
 from .forms import CustomPasswordResetForm
 
@@ -45,5 +46,7 @@ urlpatterns = [
     path('actions/delete_friend/', DeleteFriend.as_view(), name='delete_friend'),
 
     path('posts/create_post/', CreatePost.as_view(), name='create_post'),
-    path('posts/<slug:post_uuid>/', PostPage.as_view(), name='post_page')
+    path('posts/<slug:post_uuid>/', PostPage.as_view(), name='post_page'),
+    path('posts/<slug:post_uuid>/delete/', DeletePostPage.as_view(), name='delete_post_page'),
+    path('posts/<slug:post_uuid>/edit/', EditPostPage.as_view(), name='edit_post_page')
 ]

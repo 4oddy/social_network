@@ -53,6 +53,12 @@ class PostCreatingForm(BaseForm):
         fields = ('title', 'description')
 
 
+class PostEditingForm(BaseForm):
+    class Meta:
+        model = Post
+        fields = ('title', 'description')
+
+
 class CustomPasswordResetForm(PasswordResetForm):
     """ Form to send password reset emails by Celery worker """
     email = forms.EmailField(max_length=254, widget=forms.TextInput(

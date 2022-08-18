@@ -1,20 +1,21 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import TemplateView, ListView
-from django.views.generic.edit import CreateView, UpdateView
+from django.views.generic import TemplateView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic import View, DetailView
 from django.contrib.auth.views import LoginView
 from django.contrib.auth import login as auth_login
 from django.http import HttpResponseRedirect
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404, reverse
+from django.http import HttpResponseForbidden
 
 from .models import FriendRequest, Post
 
 from .forms import (CustomUserCreationForm, FindUserForm, CustomAuthenticationForm,
-                    UserSettingsForm, PostCreatingForm)
+                    UserSettingsForm, PostCreatingForm, PostEditingForm)
 
-from .services import (find_users, find_friend_request, get_data_for_action,
+from .services import (find_users, get_data_for_action,
                        get_username_from_kwargs, create_friend_request, send_email_login,
                        send_email_changed_settings, delete_from_friendship)
 
@@ -84,6 +85,10 @@ class UserProfilePage(LoginRequiredMixin, TemplateView):
 
         if posts.exists():
             context['posts'] = posts[::-1]
+            context['allowed_to_edit'] = False
+
+            if own_profile:
+                context['allowed_to_edit'] = True
 
         return context
 
@@ -117,10 +122,6 @@ class UserSettingsPage(LoginRequiredMixin, UpdateView):
     model = User
     template_name = 'user_settings.html'
     form_class = UserSettingsForm
-
-    def get(self, request, *args, **kwargs):
-        self.object = request.user
-        return super().get(request, *args, **kwargs)
 
     def get_object(self, *args, **kwargs):
         return self.request.user
@@ -250,3 +251,47 @@ class PostPage(LoginRequiredMixin, DetailView):
 
     def get_object(self, queryset=None):
         return get_object_or_404(Post.objects.select_related('owner'), post_uuid=self.kwargs['post_uuid'])
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['allowed_to_edit'] = False
+
+        if self.request.user == self.get_object().owner:
+            context['allowed_to_edit'] = True
+
+        return context
+
+
+class DeletePostPage(LoginRequiredMixin, DeleteView):
+    model = Post
+    template_name = 'delete_post_page.html'
+    context_object_name = 'post'
+
+    def get_object(self, queryset=None):
+        return get_object_or_404(Post.objects.select_related('owner'), post_uuid=self.kwargs['post_uuid'])
+
+    def get_success_url(self):
+        return reverse('main:user_page', kwargs={'username': self.request.user})
+
+    def render_to_response(self, context, **response_kwargs):
+        if self.request.user == self.get_object().owner:
+            return super().render_to_response(context, **response_kwargs)
+        return HttpResponseForbidden('Вы не можете удалить эту запись')
+
+
+class EditPostPage(LoginRequiredMixin, UpdateView):
+    model = Post
+    template_name = 'edit_post_page.html'
+    form_class = PostEditingForm
+    context_object_name = 'post'
+
+    def get_object(self, queryset=None):
+        return get_object_or_404(Post.objects.select_related('owner'), post_uuid=self.kwargs['post_uuid'])
+
+    def get_success_url(self):
+        return reverse('main:user_page', kwargs={'username': self.request.user})
+
+    def render_to_response(self, context, **response_kwargs):
+        if self.request.user == self.get_object().owner:
+            return super().render_to_response(context, **response_kwargs)
+        return HttpResponseForbidden('Вы не можете изменять эту запись')
