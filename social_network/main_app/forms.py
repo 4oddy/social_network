@@ -63,6 +63,7 @@ class PostCreatingForm(forms.ModelForm):
 
 
 class CustomPasswordResetForm(PasswordResetForm):
+    """ Form to send password reset emails by Celery worker """
     email = forms.EmailField(max_length=254, widget=forms.TextInput(
         attrs={
             'class': 'form-control',

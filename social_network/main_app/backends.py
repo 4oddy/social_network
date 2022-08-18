@@ -19,11 +19,14 @@ class CustomBackend(BaseBackend):
         password = kwargs['password']
 
         try:
+            # checking by email
             if '@' in username:
                 user = User.objects.get(email=username)
             else:
+                # by username
                 user = User.objects.get(username=username)
 
+            # setting last online
             if user.check_password(password) is True:
                 user.last_online = timezone.now()
                 return user

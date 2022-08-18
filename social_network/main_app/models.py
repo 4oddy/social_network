@@ -110,17 +110,9 @@ class Post(models.Model):
     def save(
         self, force_insert=False, force_update=False, using=None, update_fields=None
     ):
-        self.post_uuid = self.create_uuid()
+        self.post_uuid = self._create_uuid()
 
         return super(Post, self).save()
-
-    def create_uuid(self):
-        post_uuid = str(uuid.uuid4())[:23]
-
-        while Post.objects.filter(post_uuid=post_uuid).exists():
-            post_uuid = str(uuid.uuid4())[:23]
-
-        return post_uuid
 
     def clean(self):
         if not self.title and not self.description:
@@ -134,3 +126,11 @@ class Post(models.Model):
 
     def get_absolute_url(self):
         return reverse('main:post_page', kwargs={'post_uuid': self.post_uuid})
+
+    def _create_uuid(self):
+        post_uuid = str(uuid.uuid4())[:23]
+
+        while Post.objects.filter(post_uuid=post_uuid).exists():
+            post_uuid = str(uuid.uuid4())[:23]
+
+        return post_uuid
