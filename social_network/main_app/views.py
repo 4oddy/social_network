@@ -1,38 +1,24 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, ListView
 from django.views.generic.edit import CreateView, UpdateView
 from django.views.generic import View, DetailView
 from django.contrib.auth.views import LoginView
 from django.contrib.auth import login as auth_login
 from django.http import HttpResponseRedirect
-from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404, reverse
 
 from .models import FriendRequest, Post
+
 from .forms import (CustomUserCreationForm, FindUserForm, CustomAuthenticationForm,
                     UserSettingsForm, PostCreatingForm)
-from .tasks import send_email
-from .services import find_users, find_friend_request
-from .utils import get_current_date
+
+from .services import (find_users, find_friend_request, get_data_for_action,
+                       get_username_from_kwargs, create_friend_request, send_email_login,
+                       send_email_changed_settings, delete_from_friendship)
 
 User = get_user_model()
-
-
-# func to get data from hidden form's fields
-def get_data_for_action(request):
-    user_path = request.POST['current_path']
-    from_user_id = request.user.pk
-    from_user = request.user
-    to_user_id = request.POST['user_id']
-
-    return {'user_path': user_path, 'from_user_id': from_user_id, 'from_user': from_user,
-            'to_user_id': to_user_id}
-
-
-def get_username_from_kwargs(kwargs):
-    return kwargs['username'].replace('@', '')
 
 
 class MainPage(TemplateView):
@@ -102,8 +88,9 @@ class UserProfilePage(LoginRequiredMixin, TemplateView):
         return context
 
 
-class FriendsListPage(LoginRequiredMixin, TemplateView):
+class FriendsListPage(LoginRequiredMixin, ListView):
     template_name = 'friends_page.html'
+    context_object_name = 'friends'
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -116,9 +103,15 @@ class FriendsListPage(LoginRequiredMixin, TemplateView):
             user = self.request.user
 
         context['profile'] = user
-        context['friends'] = user.friends.all()
 
         return context
+
+    def get_queryset(self):
+        username = get_username_from_kwargs(self.kwargs)
+        user = get_object_or_404(User.objects.prefetch_related('friends'), username=username)
+
+        queryset = user.friends.all()
+        return queryset
 
 
 class RegisterUserPage(CreateView):
@@ -142,15 +135,7 @@ class UserSettingsPage(LoginRequiredMixin, UpdateView):
     def post(self, request, *args, **kwargs):
         user = request.user
 
-        if settings.SEND_EMAILS:
-            name = user.first_name
-
-            if not name:
-                name = user.username
-
-            email_body = settings.DEFAULT_EMAIL_SETTINGS_CHANGED_BODY.format(name=name, date=get_current_date())
-
-            send_email.delay(subject=settings.DEFAULT_EMAIL_SETTINGS_CHANGED_SUBJECT, body=email_body, to=[user.email])
+        send_email_changed_settings(user)
 
         return super().post(request, *args, **kwargs)
 
@@ -167,16 +152,7 @@ class CustomLoginPage(LoginView):
         user = form.get_user()
         auth_login(self.request, user)
 
-        if settings.SEND_EMAILS:
-            name = user.first_name
-            username = user.username
-
-            if not name:
-                name = user.username
-
-            email_body = settings.DEFAULT_EMAIL_LOGIN_BODY.format(name=name, username=username, date=get_current_date())
-
-            send_email.delay(subject=settings.DEFAULT_EMAIL_LOGIN_SUBJECT, body=email_body, to=[user.email])
+        send_email_login(user)
 
         return HttpResponseRedirect(self.get_success_url())
 
@@ -215,23 +191,7 @@ class CreateFriendRequest(LoginRequiredMixin, View):
     def post(self, *args, **kwargs):
         data = get_data_for_action(self.request)
 
-        FriendRequest.objects.create(from_user_id=data['from_user_id'], to_user_id=data['to_user_id'])
-
-        if settings.SEND_EMAILS:
-            from_user = get_object_or_404(User, pk=data['from_user_id'])
-            to_user = get_object_or_404(User, pk=data['to_user_id'])
-
-            name = to_user.first_name
-
-            if not name:
-                name = to_user.username
-
-            username = from_user.username
-
-            email_body = settings.DEFAULT_EMAIL_FRIEND_REQUEST_BODY.format(name=name, name_requested=username,
-                                                                           date=get_current_date())
-
-            send_email.delay(subject=settings.DEFAULT_EMAIL_FRIEND_REQUEST_SUBJECT, body=email_body, to=[to_user.email])
+        create_friend_request(from_user=data['from_user'], to_user_id=data['to_user_id'])
 
         return redirect(data['user_path'])
 
@@ -274,13 +234,7 @@ class DeleteFriend(LoginRequiredMixin, View):
         data = get_data_for_action(self.request)
         user = get_object_or_404(User, pk=data['to_user_id'])
 
-        request = find_friend_request(data['from_user'], user)
-
-        if data['from_user'] in user.friends.all() and user in data['from_user'].friends.all():
-            user.friends.remove(data['from_user'])
-            data['from_user'].friends.remove(user)
-
-        request.delete() if request else None
+        delete_from_friendship(data['from_user'], user)
 
         return redirect(data['user_path'])
 

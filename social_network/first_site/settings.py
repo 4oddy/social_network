@@ -78,13 +78,13 @@ TEMPLATES = [
 WSGI_APPLICATION = 'first_site.wsgi.application'
 ASGI_APPLICATION = 'first_site.asgi.application'
 
-CHANNEL_REDIS_HOST = 'redis://127.0.0.1:6379/0'
+CHANNEL_REDIS_HOST = ('127.0.0.1', 6379)
 
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            "hosts": [('127.0.0.1', 6379)],
+            "hosts": [CHANNEL_REDIS_HOST],
             "symmetric_encryption_keys": [SECRET_KEY],
         },
     },

@@ -1,10 +1,11 @@
 from django import forms
 from django.contrib.auth import get_user_model
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, UsernameField
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, UsernameField, PasswordResetForm
 from captcha.fields import CaptchaField
 
 from .models import CustomUser, Post
 from .validators import custom_username_validator
+from .tasks import send_password_reset_email
 
 User = get_user_model()
 
@@ -59,3 +60,22 @@ class PostCreatingForm(forms.ModelForm):
     class Meta:
         model = Post
         fields = ('title', 'description', 'simple_captcha')
+
+
+class CustomPasswordResetForm(PasswordResetForm):
+    email = forms.EmailField(max_length=254, widget=forms.TextInput(
+        attrs={
+            'class': 'form-control',
+            'id': 'email',
+            'placeholder': 'Email'
+        }
+    ))
+
+    def send_mail(self, subject_template_name, email_template_name, context,
+                  from_email, to_email, html_email_template_name=None):
+        context['user'] = context['user'].id
+
+        send_password_reset_email.delay(subject_template_name=subject_template_name,
+                                        email_template_name=email_template_name,
+                                        context=context, from_email=from_email, to_email=to_email,
+                                        html_email_template_name=html_email_template_name)

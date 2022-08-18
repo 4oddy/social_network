@@ -1,10 +1,11 @@
-from django.urls import path
+from django.urls import path, reverse_lazy
 from django.contrib.auth.views import LogoutView, PasswordResetView, PasswordResetConfirmView, PasswordResetDoneView
 
 from .views import (UserProfilePage, MainPage, RegisterUserPage,
                     FindUserPage, CreateFriendRequest, CancelFriendRequest,
                     AcceptFriendRequest, DenyFriendRequest, DeleteFriend,
                     FriendsListPage, CustomLoginPage, UserSettingsPage, CreatePost, PostPage)
+from .forms import CustomPasswordResetForm
 
 app_name = 'main'
 
@@ -21,7 +22,9 @@ urlpatterns = [
                                                                 email_template_name=
                                                                 'password/password_reset_email.html',
                                                                 subject_template_name=
-                                                                'password/password_reset_subject.txt'),
+                                                                'password/password_reset_subject.txt',
+                                                                form_class=CustomPasswordResetForm,
+                                                                success_url=reverse_lazy('main:password_reset_done')),
          name='change_password_page'),
 
     path('accounts/password_reset_done/',
