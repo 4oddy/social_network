@@ -88,9 +88,8 @@ class UserProfilePage(LoginRequiredMixin, TemplateView):
         return context
 
 
-class FriendsListPage(LoginRequiredMixin, ListView):
+class FriendsListPage(LoginRequiredMixin, TemplateView):
     template_name = 'friends_page.html'
-    context_object_name = 'friends'
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -103,15 +102,9 @@ class FriendsListPage(LoginRequiredMixin, ListView):
             user = self.request.user
 
         context['profile'] = user
+        context['friends'] = user.friends.all()
 
         return context
-
-    def get_queryset(self):
-        username = get_username_from_kwargs(self.kwargs)
-        user = get_object_or_404(User.objects.prefetch_related('friends'), username=username)
-
-        queryset = user.friends.all()
-        return queryset
 
 
 class RegisterUserPage(CreateView):

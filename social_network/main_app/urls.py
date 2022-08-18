@@ -5,14 +5,18 @@ from .views import (UserProfilePage, MainPage, RegisterUserPage,
                     FindUserPage, CreateFriendRequest, CancelFriendRequest,
                     AcceptFriendRequest, DenyFriendRequest, DeleteFriend,
                     FriendsListPage, CustomLoginPage, UserSettingsPage, CreatePost, PostPage)
+
 from .forms import CustomPasswordResetForm
 
 app_name = 'main'
 
+
 urlpatterns = [
     path('', MainPage.as_view(), name='main_page'),
+
     path('<str:username>/', UserProfilePage.as_view(), name='user_page'),
     path('<str:username>/friends/', FriendsListPage.as_view(), name='friends_page'),
+
     path('accounts/find_user/', FindUserPage.as_view(), name='find_user'),
     path('accounts/login/', CustomLoginPage.as_view(), name='login_page'),
     path('accounts/logout/', LogoutView.as_view(), name='logout_page'),
@@ -39,6 +43,7 @@ urlpatterns = [
     path('actions/accept_request/', AcceptFriendRequest.as_view(), name='accept_friend_request'),
     path('actions/deny_request/', DenyFriendRequest.as_view(), name='deny_friend_request'),
     path('actions/delete_friend/', DeleteFriend.as_view(), name='delete_friend'),
+
     path('posts/create_post/', CreatePost.as_view(), name='create_post'),
     path('posts/<slug:post_uuid>/', PostPage.as_view(), name='post_page')
 ]
