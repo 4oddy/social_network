@@ -78,13 +78,14 @@ TEMPLATES = [
 WSGI_APPLICATION = 'first_site.wsgi.application'
 ASGI_APPLICATION = 'first_site.asgi.application'
 
-CHANNEL_REDIS_HOST = ('127.0.0.1', 6379)
+CHANNEL_REDIS_HOST = os.environ.get('CHANNEL_REDIS_HOST')
+CHANNEL_REDIS_PORT = os.environ.get('CHANNEL_REDIS_PORT')
 
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            "hosts": [CHANNEL_REDIS_HOST],
+            "hosts": [(CHANNEL_REDIS_HOST, CHANNEL_REDIS_PORT)],
             "symmetric_encryption_keys": [SECRET_KEY],
         },
     },
@@ -177,8 +178,8 @@ DEFAULT_FROM_EMAIL = MY_EMAIL
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
-EMAIL_HOST = 'smtp.mail.ru'
-EMAIL_PORT = 465
+EMAIL_HOST = os.environ.get('EMAIL_HOST')
+EMAIL_PORT = os.environ.get('EMAIL_PORT')
 EMAIL_USE_SSL = True
 
 EMAIL_HOST_USER = MY_EMAIL
