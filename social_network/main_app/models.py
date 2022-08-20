@@ -80,7 +80,6 @@ class FriendRequest(models.Model):
             second_user.friends.add(first_user)
 
             self.request_status = 'a'
-            print('request status accepted')
             self.save()
 
     def deny(self):

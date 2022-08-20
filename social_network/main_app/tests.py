@@ -48,8 +48,20 @@ class TestUser(TestCase):
                 request = FriendRequest.objects.create(from_user=self.user, to_user=user)
                 self.assertEqual(request.request_status, 'c')
 
+                request.accept()
+                self.assertEqual(request.request_status, 'a')
+
+                expression = self.user in user.friends.all()
+                self.assertTrue(expression)
+
     def test_custom_friend_request(self):
         for user in self.users_queryset:
             if user != self.user:
                 request = create_friend_request(from_user=self.user, to_user_id=user.pk)
                 self.assertEqual(request.request_status, 'c')
+
+                request.accept()
+                self.assertEqual(request.request_status, 'a')
+
+                expression = self.user in user.friends.all()
+                self.assertTrue(expression)
