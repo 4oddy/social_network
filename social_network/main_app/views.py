@@ -153,13 +153,9 @@ class CustomLoginPage(LoginView):
 
 class FindUserPage(LoginRequiredMixin, View):
     def get(self, *args, **kwargs):
-        form = FindUserForm()
-        context = {'form': form}
-        return render(self.request, 'find_user_page.html', context)
-
-    def post(self, *args, **kwargs):
         context = {}
-        form = FindUserForm(self.request.POST)
+        form = FindUserForm({'username': self.request.GET.get('username')})
+
         context['form'] = form
 
         if form.is_valid():

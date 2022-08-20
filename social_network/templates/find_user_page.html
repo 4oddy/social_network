@@ -17,7 +17,7 @@
     height: 200px;
     text-align: center;
     border-radius: 10px;">
-        <form method="post" style="max-width: 350px; width: 350px;">{% csrf_token %}
+        <form method="get" style="max-width: 350px; width: 350px;">
             {{ form|crispy }}
             <br>
             <button type="submit" class="btn btn-success"
