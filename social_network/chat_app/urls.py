@@ -1,7 +1,10 @@
 from django.urls import path
 
-from .views import Chat
+from .views import ConservationPage, DialogPage
+
+app_name = 'chat'
 
 urlpatterns = [
-    path('<str:username>/', Chat.as_view())
+    path('conservations/<str:group_name>/', ConservationPage.as_view(), name='conservation_page'),
+    path('dialogs/<str:companion_name>/', DialogPage.as_view(), name='dialog_page')
 ]

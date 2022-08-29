@@ -1,16 +1,18 @@
-const username = JSON.parse(document.getElementById('username').textContent);
+const group_name = JSON.parse(document.getElementById('group_name').textContent);
+const group_type = JSON.parse(document.getElementById('group_type').textContent);
 
         const chatSocket = new WebSocket(
             'ws://'
             + window.location.host
             + '/chatting/'
-            + username
+            + group_type + '/'
+            + group_name
             + '/'
         );
 
         chatSocket.onmessage = function(e) {
             const data = JSON.parse(e.data);
-            document.querySelector('#chat-log').value += (data.message + '\n');
+            document.querySelector('#chat-log').value += (data.sender_dict['username'] + ': ' + data.message + '\n');
         };
 
         chatSocket.onclose = function(e) {

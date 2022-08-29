@@ -1,0 +1,2 @@
+class SelfDialogCreated(Exception):
+    pass

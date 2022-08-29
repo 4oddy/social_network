@@ -2,4 +2,5 @@
 venv
 social_network/images/user_images/**
 __pycache__/
+migrations/
 social_network/test.env
