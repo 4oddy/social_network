@@ -80,6 +80,8 @@ class SaverDialogMessages(AbstractSaver):
 
 
 class SenderMessages:
+    """ Class to manage logic of sending messages """
+
     def __init__(self, saver: AbstractSaver):
         self._saver: AbstractSaver = saver
         self._channel_layer = get_channel_layer()
