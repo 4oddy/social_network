@@ -52,7 +52,6 @@
                                 Нет друзей
                                 {% endif %}
                                 <br>
-            <br>
                             {% if request.user != profile %}
                                 {% if not in_friendship and not already_requested and not requested_to_you %}
                                     <form method="post" action="{% url 'main:create_friend_request' %}"> {% csrf_token %}
@@ -64,6 +63,8 @@
                                     </form>
 
                                 {% elif in_friendship %}
+                                    <a href="{% url 'chat:dialog_page' profile %}" style="color: black; text-decoration: none; text-align: right;">Написать сообщение</a>
+            <br>
                                     <form method="post" action="{% url 'main:delete_friend' %}"> {% csrf_token %}
                                         <input type="hidden" name="user_id" value="{{ profile.pk }}">
                                         <input type="hidden" name="current_path" value="{{ request.path }}">
