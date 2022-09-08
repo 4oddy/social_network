@@ -54,10 +54,46 @@ class TestUser(TestCase):
                 expression = self.user in user.friends.all()
                 self.assertTrue(expression)
 
-    def test_custom_friend_request(self):
+    def test_custom_friend_request_first(self):
         for user in self.users_queryset:
             if user != self.user:
                 request = create_friend_request(from_user=self.user, to_user_id=user.pk)
+                self.assertEqual(request.request_status, 'c')
+
+                request.accept()
+                self.assertEqual(request.request_status, 'a')
+
+                expression = self.user in user.friends.all()
+                self.assertTrue(expression)
+
+    def test_custom_friend_request_second(self):
+        for user in self.users_queryset:
+            if user != self.user:
+                request = create_friend_request(from_user=self.user, to_user=user)
+                self.assertEqual(request.request_status, 'c')
+
+                request.accept()
+                self.assertEqual(request.request_status, 'a')
+
+                expression = self.user in user.friends.all()
+                self.assertTrue(expression)
+
+    def test_custom_friend_request_third(self):
+        for user in self.users_queryset:
+            if user != self.user:
+                request = create_friend_request(from_user_id=self.user.pk, to_user=user)
+                self.assertEqual(request.request_status, 'c')
+
+                request.accept()
+                self.assertEqual(request.request_status, 'a')
+
+                expression = self.user in user.friends.all()
+                self.assertTrue(expression)
+
+    def test_custom_friend_request_fourth(self):
+        for user in self.users_queryset:
+            if user != self.user:
+                request = create_friend_request(from_user_id=self.user.pk, to_user_id=user.pk)
                 self.assertEqual(request.request_status, 'c')
 
                 request.accept()

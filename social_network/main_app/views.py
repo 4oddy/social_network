@@ -85,10 +85,7 @@ class UserProfilePage(LoginRequiredMixin, TemplateView):
 
         if posts.exists():
             context['posts'] = posts[::-1]
-            context['allowed_to_edit'] = False
-
-            if own_profile:
-                context['allowed_to_edit'] = True
+            context['allowed_to_edit'] = True if own_profile else False
 
         return context
 
@@ -127,9 +124,7 @@ class UserSettingsPage(LoginRequiredMixin, UpdateView):
         return self.request.user
 
     def post(self, request, *args, **kwargs):
-        user = request.user
-
-        send_email_changed_settings(user)
+        send_email_changed_settings(request.user)
 
         return super().post(request, *args, **kwargs)
 

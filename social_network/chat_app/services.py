@@ -87,7 +87,9 @@ class SenderMessages:
         self._channel_layer = get_channel_layer()
 
     async def send_message(self, sender: User, message: str, group: AbstractDialog):
-        sender_dict: dict = await sync_to_async(model_to_dict)(sender, fields=('username',))
+        sender_dict: dict = await sync_to_async(model_to_dict)(sender, fields=('username', ))
+        sender_dict['image_url'] = sender.image.url
+        sender_dict['profile_url'] = sender.get_absolute_url()
 
         await self._saver.save_message(user=sender, message=message, group=group)
 

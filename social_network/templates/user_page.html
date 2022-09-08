@@ -51,7 +51,7 @@
                                 {% else %}
                                 Нет друзей
                                 {% endif %}
-                                <br>
+                                <br><br>
                             {% if request.user != profile %}
                                 {% if not in_friendship and not already_requested and not requested_to_you %}
                                     <form method="post" action="{% url 'main:create_friend_request' %}"> {% csrf_token %}

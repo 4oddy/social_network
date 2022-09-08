@@ -6,25 +6,32 @@
 
 {% block other_styles %}
     {% load static %}
+{% load crispy_forms_tags %}
 {% endblock %}
 
 {% block content %}
 {{ group_name|json_script:"group_name" }}
 {{ group_type|json_script:"group_type" }}
 
-<div class="container" style="background-color: white; border-radius: 10px;">
-    <br>
-<textarea readonly id="chat-log" cols="100" rows="20" style="display: block;
-    margin-left: auto;
-    margin-right: auto;">{% for message in messages %}
-                                                {{ message.sender }}: {{ message.text }}
-                                                {% endfor %}</textarea><br>
-    <input id="chat-message-input" type="text" size="100" style="margin: 0 auto;"><br>
-    <input id="chat-message-submit" type="button" value="Send">
+<div id="chat_messages" class="container" style="background-color: white; border-radius: 10px; padding-bottom: 10px; padding-top: 15px;">
+        {% for message in messages %}
+            <p><a href="{{ message.sender.get_absolute_url }}"><img src="{{ message.sender.image.url }}" style="    width: 60px;
+    height: 60px;
+    border-radius: 100px;"> </a> {{ message.sender }}: {{ message.text }}</p>
+        {% endfor %}
     </div>
+<br>
+    <input id="chat-message-input" class="form-control" type="text" size="150" style="width: 500px; display: block;
+  margin-left: auto;
+  margin-right: auto;">
+<button id="chat-message-submit" class="btn btn-success" style="  display: block;
+  margin-left: auto;
+  margin-right: auto;"> Отправить </button>
+<br>
 <script>
 const group_name = JSON.parse(document.getElementById('group_name').textContent);
 const group_type = JSON.parse(document.getElementById('group_type').textContent);
+const chat = document.querySelector('#chat_messages');
 
         const chatSocket = new WebSocket(
             'ws://'
@@ -37,7 +44,9 @@ const group_type = JSON.parse(document.getElementById('group_type').textContent)
 
         chatSocket.onmessage = function(e) {
             const data = JSON.parse(e.data);
-            document.querySelector('#chat-log').value += (data.sender_dict['username'] + ': ' + data.message + '\n');
+            chat.innerHTML += `<p> <a href="${data.sender_dict['profile_url']}"> <img src="${data.sender_dict['image_url']}" style="    width: 60px;
+    height: 60px;
+    border-radius: 100px;"> </a> ${data.sender_dict['username']}: ${data.message} </p>`
         };
 
         chatSocket.onclose = function(e) {
@@ -53,11 +62,14 @@ const group_type = JSON.parse(document.getElementById('group_type').textContent)
 
         document.querySelector('#chat-message-submit').onclick = function(e) {
             const messageInputDom = document.querySelector('#chat-message-input');
-            const message = messageInputDom.value;
-            chatSocket.send(JSON.stringify({
-                'message': message
-            }));
-            messageInputDom.value = '';
+            const message = messageInputDom.value.replace(/(<([^>]+)>)/gi, "");;
+
+            if (message.length > 0) {
+                chatSocket.send(JSON.stringify({
+                    'message': message
+                }));
+                messageInputDom.value = '';
+            }
         };
 </script>
 {% endblock %}

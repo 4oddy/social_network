@@ -15,10 +15,24 @@ def find_users(username):
     return queryset
 
 
-def find_friend_request(first_user, second_user):
-    queryset = FriendRequest.objects.filter(Q(from_user=first_user) & Q(to_user=second_user) |
-                                            Q(from_user=second_user) | Q(to_user=first_user)).first()
-    return queryset
+def find_friend_request(first_user: User = None, second_user: User = None,
+                        first_user_id: int = None, second_user_id: int = None):
+    request = None
+
+    if first_user and second_user:
+        request = FriendRequest.objects.filter(Q(from_user=first_user) & Q(to_user=second_user) |
+                                               Q(from_user=second_user) | Q(to_user=first_user)).first()
+    elif first_user and second_user_id:
+        request = FriendRequest.objects.filter(Q(from_user=first_user) & Q(to_user_id=second_user_id) |
+                                               Q(from_user_id=second_user_id) & Q(to_user=first_user)).first()
+    elif first_user_id and second_user:
+        request = FriendRequest.objects.filter(Q(from_user_id=first_user_id) & Q(to_user=second_user) |
+                                               Q(from_user=second_user) | Q(to_user_id=first_user_id)).first()
+    elif first_user_id and second_user_id:
+        request = FriendRequest.objects.filter(Q(from_user_id=first_user_id) & Q(to_user_id=second_user_id) |
+                                               Q(from_user_id=second_user_id) | Q(to_user_id=first_user_id)).first()
+
+    return request
 
 
 # func to get data from hidden form's fields
@@ -36,15 +50,28 @@ def get_username_from_kwargs(kwargs):
     return kwargs['username'].replace('@', '')
 
 
-def create_friend_request(from_user, to_user_id):
-    request = FriendRequest.objects.create(from_user=from_user, to_user_id=to_user_id)
+def create_friend_request(from_user=None, from_user_id=None, to_user=None, to_user_id=None):
+    request = None
+
+    if from_user and to_user:
+        if find_friend_request(first_user=from_user, second_user=to_user) is None:
+            request = FriendRequest.objects.create(from_user=from_user, to_user=to_user)
+
+    elif from_user and to_user_id:
+        if find_friend_request(first_user=from_user, second_user_id=to_user_id) is None:
+            request = FriendRequest.objects.create(from_user=from_user, to_user_id=to_user_id)
+
+    elif from_user_id and to_user:
+        if find_friend_request(first_user_id=from_user_id, second_user=to_user) is None:
+            request = FriendRequest.objects.create(from_user_id=from_user_id, to_user=to_user)
+
+    elif from_user_id and to_user_id:
+        if find_friend_request(first_user_id=from_user_id, second_user_id=to_user_id) is None:
+            request = FriendRequest.objects.create(from_user_id=from_user_id, to_user_id=to_user_id)
 
     if settings.SEND_EMAILS:
         to_user = get_object_or_404(User, pk=to_user_id)
-        name = to_user.first_name
-
-        if not name:
-            name = to_user.username
+        name = to_user.first_name if to_user.first_name else to_user.username
 
         username = from_user.username
 
@@ -58,11 +85,8 @@ def create_friend_request(from_user, to_user_id):
 
 def send_email_login(user):
     if settings.SEND_EMAILS:
-        name = user.first_name
+        name = user.first_name if user.first_name else user.username
         username = user.username
-
-        if not name:
-            name = user.username
 
         email_body = settings.DEFAULT_EMAIL_LOGIN_BODY.format(name=name, username=username, date=get_current_date())
 
@@ -71,10 +95,7 @@ def send_email_login(user):
 
 def send_email_changed_settings(user):
     if settings.SEND_EMAILS:
-        name = user.first_name
-
-        if not name:
-            name = user.username
+        name = user.first_name if user.first_name else user.username
 
         email_body = settings.DEFAULT_EMAIL_SETTINGS_CHANGED_BODY.format(name=name, date=get_current_date())
 
