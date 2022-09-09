@@ -13,18 +13,47 @@
 {{ group_name|json_script:"group_name" }}
 {{ group_type|json_script:"group_type" }}
 
-<div id="chat_messages" class="container" style="background-color: white; border-radius: 10px; padding-bottom: 10px; padding-top: 15px;">
-        {% for message in messages %}
-            <p><a href="{{ message.sender.get_absolute_url }}"><img src="{{ message.sender.image.url }}" style="    width: 60px;
-    height: 60px;
-    border-radius: 100px;"> </a> {{ message.sender }}: {{ message.text }}</p>
-        {% endfor %}
+<div class="container" style="background-color: white; border-radius: 10px; padding-bottom: 10px; padding-top: 20px;">
+    {% if dialog %}
+        <p align="center">
+                                <a href="{{ companion.get_absolute_url }}" style="color: black; text-decoration: none;">
+                                    <img src="{{ companion.image.url }}" style="width: 60px;
+        height: 60px;
+        border-radius: 100px;">
+                                     {{ companion.username }} <br>
+                                        {% if companion.is_online %}
+                                             сейчас в сети
+                                        {% else %}
+                                        был {{ companion.last_online }}
+                                    {% endif %}
+                                </a>
+                            </p>
+    {% elif conservation %}
+        <p align="center">
+            <a href="{{ conservation.get_absolute.url }}" style="color: black; text-decoration: none;">
+                {{ conservation.name }}
+            </a></p>
+
+    {% endif %}
+</div>
+<br>
+<div id="chat_messages" class="container" style="background-color: white; border-radius: 10px; padding-bottom: 10px; padding-top: 20px; padding-left: 20px; word-wrap: break-word;">
+        {% if messages %}
+            {% for message in messages %}
+                <p><a href="{{ message.sender.get_absolute_url }}"><img src="{{ message.sender.image.url }}" style="    width: 60px;
+        height: 60px;
+        border-radius: 100px;"> </a> {{ message.sender }}: {{ message.text }}</p>
+            {% endfor %}
+        {% else %}
+    <p align="center">Напишите первое сообщение</p>
+        {% endif %}
     </div>
 <br>
-    <input id="chat-message-input" class="form-control" type="text" size="150" style="width: 500px; display: block;
+    <input id="chat-message-input" class="form-control" type="text" size="150" style="display: block; width: 500px;
   margin-left: auto;
   margin-right: auto;">
-<button id="chat-message-submit" class="btn btn-success" style="  display: block;
+<br>
+<button id="chat-message-submit" class="btn btn-success" style="display: block;
   margin-left: auto;
   margin-right: auto;"> Отправить </button>
 <br>
@@ -64,7 +93,7 @@ const chat = document.querySelector('#chat_messages');
             const messageInputDom = document.querySelector('#chat-message-input');
             const message = messageInputDom.value.replace(/(<([^>]+)>)/gi, "");;
 
-            if (message.length > 0) {
+            if (message.trim().length > 0) {
                 chatSocket.send(JSON.stringify({
                     'message': message
                 }));

@@ -8,7 +8,7 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
 from django.db.models import Q
 
-from .models import AbstractDialog, Conservation, ConservationMessage, Dialog, DialogMessage
+from .models import AbstractDialog, AbstractMessage, Conservation, ConservationMessage, Dialog, DialogMessage
 from .exceptions import SelfDialogCreated
 
 User = get_user_model()
@@ -16,13 +16,13 @@ User = get_user_model()
 
 class AbstractGetter(ABC):
     @abstractmethod
-    def get_group(self, name: str, owner: User):
+    async def get_group(self, name: str, owner: User) -> AbstractDialog:
         pass
 
 
 class AbstractSaver(ABC):
     @abstractmethod
-    def save_message(self, user: User, message: str, group: AbstractDialog):
+    async def save_message(self, user: User, message: str, group: AbstractDialog) -> AbstractMessage:
         pass
 
 
@@ -30,7 +30,7 @@ class GetterConservations(AbstractGetter):
     """ Class to manage logic of getting conservations """
 
     @sync_to_async
-    def get_group(self, name: str, owner: User):
+    def get_group(self, name: str, owner: User) -> Conservation:
         if owner is not None:
             group = get_object_or_404(Conservation, owner=owner, name=name)
         else:
@@ -42,7 +42,7 @@ class GetterDialogs(AbstractGetter):
     """ Class to manage logic of getting dialogs"""
 
     @sync_to_async
-    def get_group(self, companion_name: str, user: User):
+    def get_group(self, companion_name: str, user: User) -> Dialog:
         if companion_name == user.username:
             raise SelfDialogCreated('Пользователь не может начать диалог с самим собой')
 
@@ -54,7 +54,8 @@ class GetterDialogs(AbstractGetter):
         if dialog is None:
             second_user: User = get_object_or_404(User, username=companion_name)
 
-            dialog = Dialog.objects.create(name=companion_name, owner=user, second_user=second_user)
+            if user in second_user.friends.all() and second_user in user.friends.all():
+                dialog = Dialog.objects.create(name=companion_name, owner=user, second_user=second_user)
 
         return dialog
 
@@ -65,7 +66,7 @@ class SaverConservationMessages(AbstractSaver):
     """ Class to manage logic of saving conservation messages """
 
     @sync_to_async
-    def save_message(self, user: User, message: str, group: Conservation):
+    def save_message(self, user: User, message: str, group: Conservation) -> ConservationMessage:
         msg = ConservationMessage.objects.create(text=message, sender=user, group=group)
         return msg
 
@@ -74,7 +75,7 @@ class SaverDialogMessages(AbstractSaver):
     """ Class to manage logic of saving dialog messages """
 
     @sync_to_async
-    def save_message(self, user: User, message: str, group: Dialog):
+    def save_message(self, user: User, message: str, group: Dialog) -> DialogMessage:
         msg = DialogMessage.objects.create(text=message, sender=user, group=group)
         return msg
 

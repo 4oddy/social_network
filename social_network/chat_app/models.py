@@ -1,6 +1,7 @@
 from django.db import models
 
 from django.contrib.auth import get_user_model
+from django.shortcuts import reverse
 
 import uuid
 
@@ -36,7 +37,7 @@ class AbstractDialog(models.Model):
 
 
 class AbstractMessage(models.Model):
-    text = models.CharField(verbose_name='Текст сообщения', max_length=150)
+    text = models.TextField(verbose_name='Текст сообщения')
     sender = models.ForeignKey(User, verbose_name='Отправитель', null=True, on_delete=models.SET_NULL)
     group = models.ForeignKey(AbstractDialog, null=True, on_delete=models.SET_NULL)
     date_of_sending = models.DateTimeField(verbose_name='Дата отправки', auto_now_add=True)
@@ -46,12 +47,14 @@ class AbstractMessage(models.Model):
 
 
 class Conservation(AbstractDialog):
-    name = models.CharField(verbose_name='Имя', max_length=50, unique=True)
     members = models.ManyToManyField(User, verbose_name='Участники', related_name='conservations')
 
     class Meta:
         verbose_name = 'Беседа'
         verbose_name_plural = 'Беседы'
+
+    def get_absolute_url(self):
+        return reverse('chat:conservation_page', kwargs={'group_name': self.name})
 
 
 class Dialog(AbstractDialog):

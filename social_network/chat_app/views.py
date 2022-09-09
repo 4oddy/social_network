@@ -1,4 +1,4 @@
-from django.http import HttpResponseBadRequest
+from django.http import HttpResponseBadRequest, HttpResponseForbidden
 from django.shortcuts import get_object_or_404
 from django.views.generic import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -22,7 +22,7 @@ class ConservationPage(LoginRequiredMixin, TemplateView):
 
         context['group_type']: str = 'conservation'
         context['group_name']: str = group_name
-        context['group']: Conservation = get_object_or_404(Conservation, name=group_name)
+        context['conservation'] = get_object_or_404(Conservation, name=group_name)
         context['messages']: ConservationMessage = ConservationMessage.objects.select_related('sender').filter(
             group__name=group_name)
 
@@ -40,15 +40,27 @@ class DialogPage(LoginRequiredMixin, TemplateView):
         context['group_type']: str = 'dialog'
         context['group_name']: str = companion_name
 
-        dialog: Dialog = getter.get_group_sync(user=self.request.user, companion_name=companion_name)
+        dialog: Dialog = getter.get_group_sync(user=self.request.user,
+                                               companion_name=companion_name)
+        if dialog:
+            context['dialog'] = dialog
+            context['companion'] = dialog.owner if self.request.user != dialog.owner else dialog.second_user
 
-        context['messages']: DialogMessage = DialogMessage.objects.select_related('sender').\
-            filter(group__owner=dialog.owner,
-                   group__second_user=dialog.second_user)
+            context['messages']: DialogMessage = DialogMessage.objects.select_related('sender').\
+                filter(group__owner=dialog.owner,
+                       group__second_user=dialog.second_user)
 
         return context
 
     def get(self, *args, **kwargs):
-        if self.request.user.username == self.kwargs['companion_name']:
+        companion_name = self.kwargs['companion_name']
+
+        if self.request.user.username == companion_name:
             return HttpResponseBadRequest()
-        return super().get(*args, **kwargs)
+
+        second_user = get_object_or_404(User, username=companion_name)
+
+        if second_user in self.request.user.friends.all() and self.request.user in second_user.friends.all():
+            return super().get(*args, **kwargs)
+
+        return HttpResponseForbidden('Вы не в друзьях с ' + companion_name)
