@@ -47,3 +47,6 @@ This will start a celery worker. To enter this command, you have to be in social
 Project Architecture:
 Chat App database architecture
 ![all text](https://github.com/4oddy/social_network/blob/master/architecture/chat_app/chat_database_architecture.png)
+
+Chat App business logic architecture
+![all text](https://github.com/4oddy/social_network/blob/master/architecture/chat_app/chat_architecture.png)
