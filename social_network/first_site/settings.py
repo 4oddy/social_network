@@ -52,6 +52,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    'chat_app.middleware.request_exposer.RequestExposer'
 ]
 
 ROOT_URLCONF = 'first_site.urls'
@@ -133,7 +135,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
-STATIC_URL = '/debug_toolbar/'
+STATIC_URL = '/staticfiles/'
 STATIC_ROOT = '/static/'
 
 STATICFILES_DIRS = [

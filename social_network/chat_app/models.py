@@ -2,10 +2,13 @@ from django.db import models
 
 from django.contrib.auth import get_user_model
 from django.shortcuts import reverse
+from django.http import HttpRequest
 
 import uuid
 
 User = get_user_model()
+
+exposed_request: HttpRequest | None = None
 
 
 class AbstractDialog(models.Model):
@@ -69,6 +72,14 @@ class Dialog(AbstractDialog):
 
     def __str__(self):
         return f'{self.owner} - {self.second_user}'
+
+    def get_companion(self, user: User = None) -> User:
+        if user:
+            return self.owner if self.owner != user else self.second_user
+        return self.owner if self.owner != exposed_request.user else self.second_user
+
+    def get_absolute_url(self):
+        return reverse('chat:dialog_page', kwargs={'companion_name': self.get_companion().username})
 
 
 class ConservationMessage(AbstractMessage):

@@ -1,0 +1,17 @@
+.container {
+	background-color: white;
+	border-radius: 10px;
+}
+
+.user_img {
+	width: 100px;
+	height: 100px;
+	border-radius: 100px;
+}
+
+.user_link:hover,
+.user_link:active,
+.user_link {
+	color: black;
+	text-decoration: none;
+}

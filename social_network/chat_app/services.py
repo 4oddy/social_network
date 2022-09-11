@@ -6,7 +6,7 @@ from django.forms import model_to_dict
 
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
-from django.db.models import Q
+from django.db.models import Q, QuerySet
 
 from .models import AbstractDialog, AbstractMessage, Conservation, ConservationMessage, Dialog, DialogMessage
 from .exceptions import SelfDialogCreated
@@ -37,6 +37,10 @@ class GetterConservations(AbstractGetter):
             group = get_object_or_404(Conservation, name=name)
         return group
 
+    @staticmethod
+    def get_user_conservations(user: User) -> QuerySet:
+        return Conservation.objects.filter(members=user)
+
 
 class GetterDialogs(AbstractGetter):
     """ Class to manage logic of getting dialogs"""
@@ -58,6 +62,11 @@ class GetterDialogs(AbstractGetter):
                 dialog = Dialog.objects.create(name=companion_name, owner=user, second_user=second_user)
 
         return dialog
+
+    @staticmethod
+    def get_user_dialogs(user: User) -> QuerySet:
+        dialogs = Dialog.objects.filter(Q(owner=user) | Q(second_user=user))
+        return dialogs
 
     get_group_sync = async_to_sync(get_group)
 
@@ -87,7 +96,7 @@ class SenderMessages:
         self._saver: AbstractSaver = saver
         self._channel_layer = get_channel_layer()
 
-    async def send_message(self, sender: User, message: str, group: AbstractDialog):
+    async def send_message(self, sender: User, message: str, group: AbstractDialog) -> None:
         sender_dict: dict = await sync_to_async(model_to_dict)(sender, fields=('username', ))
         sender_dict['image_url'] = sender.image.url
         sender_dict['profile_url'] = sender.get_absolute_url()

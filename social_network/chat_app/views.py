@@ -5,11 +5,11 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import get_user_model
 
 from .models import ConservationMessage, Conservation, DialogMessage, Dialog
-from .services import GetterDialogs
+from .services import GetterDialogs, GetterConservations
 
 User = get_user_model()
 
-getter = GetterDialogs()
+getter_dialogs = GetterDialogs()
 
 
 class ConservationPage(LoginRequiredMixin, TemplateView):
@@ -40,11 +40,11 @@ class DialogPage(LoginRequiredMixin, TemplateView):
         context['group_type']: str = 'dialog'
         context['group_name']: str = companion_name
 
-        dialog: Dialog = getter.get_group_sync(user=self.request.user,
-                                               companion_name=companion_name)
+        dialog: Dialog = getter_dialogs.get_group_sync(user=self.request.user,
+                                                       companion_name=companion_name)
         if dialog:
             context['dialog'] = dialog
-            context['companion'] = dialog.owner if self.request.user != dialog.owner else dialog.second_user
+            context['companion'] = dialog.get_companion(user=self.request.user)
 
             context['messages']: DialogMessage = DialogMessage.objects.select_related('sender').\
                 filter(group__owner=dialog.owner,
@@ -64,3 +64,20 @@ class DialogPage(LoginRequiredMixin, TemplateView):
             return super().get(*args, **kwargs)
 
         return HttpResponseForbidden('Вы не в друзьях с ' + companion_name)
+
+
+class UserGroupsPage(LoginRequiredMixin, TemplateView):
+    template_name = 'groups_page.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        user: User = self.request.user
+
+        user_conservations = GetterConservations.get_user_conservations(user)
+        user_dialogs = getter_dialogs.get_user_dialogs(user)
+
+        context['conservations'] = user_conservations
+        context['dialogs'] = user_dialogs
+
+        return context
