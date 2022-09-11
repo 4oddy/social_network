@@ -43,3 +43,7 @@ This will start a Redis container on 127.0.0.1:6379.
 `celery -A first_site worker -P eventlet --loglevel info`
 
 This will start a celery worker. To enter this command, you have to be in social_network dir
+
+Project Architecture:
+Chat App database architecture
+![all text](https://github.com/4oddy/social_network/blob/master/architecture/chat_app/chat_database_architecture.png)
