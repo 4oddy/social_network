@@ -1,6 +1,6 @@
 # social_network
 
-This is my very big project written on django4 
+This is my very big project written on django4 (and it is still in development)
 
 # how to start
 
