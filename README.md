@@ -48,7 +48,7 @@ Project Architecture:
 Chat App database architecture
 ![all text](https://github.com/4oddy/social_network/blob/master/architecture/chat_app/chat_database_architecture.png)
 
-
+And
 
 Chat App business logic architecture
 ![all text](https://github.com/4oddy/social_network/blob/master/architecture/chat_app/chat_architecture.png)
