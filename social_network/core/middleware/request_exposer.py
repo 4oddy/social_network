@@ -1,7 +1,7 @@
 from chat_app import models
 
 
-class RequestExposer:
+class RequestExposerMiddleware:
     """ Middleware to get current request for getting companion of user (in models.Dialog) """
     def __init__(self, get_response):
         self._get_response = get_response

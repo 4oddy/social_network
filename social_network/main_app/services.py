@@ -1,4 +1,4 @@
-from django.db.models import Q
+from django.db.models import Q, QuerySet
 from django.contrib.auth import get_user_model
 from django.conf import settings
 from django.shortcuts import get_object_or_404
@@ -10,13 +10,13 @@ from .tasks import send_email
 User = get_user_model()
 
 
-def find_users(username):
+def find_users(username: str) -> QuerySet:
     queryset = User.objects.filter(username__icontains=username)
     return queryset
 
 
 def find_friend_request(first_user: User = None, second_user: User = None,
-                        first_user_id: int = None, second_user_id: int = None):
+                        first_user_id: int = None, second_user_id: int = None) -> FriendRequest:
     request = None
 
     if first_user and second_user:
@@ -36,7 +36,7 @@ def find_friend_request(first_user: User = None, second_user: User = None,
 
 
 # func to get data from hidden form's fields
-def get_data_for_action(request):
+def get_data_for_action(request) -> dict:
     user_path = request.POST['current_path']
     from_user_id = request.user.pk
     from_user = request.user
@@ -46,11 +46,12 @@ def get_data_for_action(request):
             'to_user_id': to_user_id}
 
 
-def get_username_from_kwargs(kwargs):
+def get_username_from_kwargs(kwargs: dict) -> str:
     return kwargs['username'].replace('@', '')
 
 
-def create_friend_request(from_user=None, from_user_id=None, to_user=None, to_user_id=None):
+def create_friend_request(from_user: User = None, from_user_id: User = None,
+                          to_user: User = None, to_user_id: User = None) -> FriendRequest:
     request = None
 
     if from_user and to_user:
@@ -83,7 +84,7 @@ def create_friend_request(from_user=None, from_user_id=None, to_user=None, to_us
     return request
 
 
-def send_email_login(user):
+def send_email_login(user: User) -> None:
     if settings.SEND_EMAILS:
         name = user.first_name if user.first_name else user.username
         username = user.username
@@ -93,7 +94,7 @@ def send_email_login(user):
         send_email.delay(subject=settings.DEFAULT_EMAIL_LOGIN_SUBJECT, body=email_body, to=[user.email])
 
 
-def send_email_changed_settings(user):
+def send_email_changed_settings(user: User) -> None:
     if settings.SEND_EMAILS:
         name = user.first_name if user.first_name else user.username
 
@@ -102,11 +103,9 @@ def send_email_changed_settings(user):
         send_email.delay(subject=settings.DEFAULT_EMAIL_SETTINGS_CHANGED_SUBJECT, body=email_body, to=[user.email])
 
 
-def delete_from_friendship(first, second):
+def delete_from_friendship(first: User, second: User) -> None:
     request = find_friend_request(first, second)
 
-    if first in second.friends.all() and second in first.friends.all():
-        first.friends.remove(second)
-        second.friends.remove(first)
-
-    request.delete() if request else None
+    if request:
+        request.delete()
+        User.delete_friends(first, second)

@@ -4,7 +4,7 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, User
 from .models import CustomUser, Post
 from .validators import custom_username_validator
 from .tasks import send_password_reset_email
-from custom.forms import BaseForm
+from core.forms import BaseForm
 
 
 class FindUserForm(forms.Form):

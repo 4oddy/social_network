@@ -53,6 +53,18 @@ class CustomUser(AbstractUser):
         if len(self.last_name) > 50:
             raise ValidationError({'last_name': 'Максимальная длина: 50'})
 
+    @staticmethod
+    def make_friends(first_user, second_user):
+        if first_user not in second_user.friends.all() and second_user not in first_user.friends.all():
+            first_user.friends.add(second_user)
+            second_user.friends.add(first_user)
+
+    @staticmethod
+    def delete_friends(first_user, second_user):
+        if first_user in second_user.friends.all() and second_user in first_user.friends.all():
+            first_user.friends.remove(second_user)
+            second_user.friends.remove(first_user)
+
 
 class FriendRequest(models.Model):
     request_statuses = (
@@ -76,8 +88,7 @@ class FriendRequest(models.Model):
         if self.request_status != 'a':
             first_user, second_user = self.from_user, self.to_user
 
-            first_user.friends.add(second_user)
-            second_user.friends.add(first_user)
+            CustomUser.make_friends(first_user, second_user)
 
             self.request_status = 'a'
             self.save()
@@ -119,15 +130,16 @@ class Post(models.Model):
             raise ValidationError('Пост не может быть пустым')
 
         if len(str(self.title)) > 50:
-            raise ValidationError('Максимальная длина: 50')
+            raise ValidationError({'title': 'Максимальная длина: 50'})
 
         if len(str(self.description)) > 150:
-            raise ValidationError('Максимальная длина: 150')
+            raise ValidationError({'description': 'Максимальная длина: 150'})
 
     def get_absolute_url(self):
         return reverse('main:post_page', kwargs={'post_uuid': self.post_uuid})
 
     def _create_uuid(self):
+        """ Generates unique uuid """
         post_uuid = str(uuid.uuid4())[:23]
 
         while Post.objects.filter(post_uuid=post_uuid).exists():

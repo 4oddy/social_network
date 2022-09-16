@@ -8,7 +8,7 @@ import uuid
 
 User = get_user_model()
 
-exposed_request: HttpRequest | None = None
+exposed_request: HttpRequest = HttpRequest()
 
 
 class AbstractDialog(models.Model):
@@ -31,6 +31,7 @@ class AbstractDialog(models.Model):
         return super(AbstractDialog, self).save()
 
     def _create_uuid(self):
+        """ Generates unique uuid """
         uid = str(uuid.uuid4())[:23]
 
         while Dialog.objects.filter(uid=uid).exists():
@@ -74,6 +75,12 @@ class Dialog(AbstractDialog):
         return f'{self.owner} - {self.second_user}'
 
     def get_companion(self, user: User = None) -> User:
+        """ This method gets your companion
+            Takes 1 positional argument: user
+            If user is defined, it will return second user of dialog
+            If user is none, it will return second user of dialog by request_exposer middleware
+             (core.middleware.request_exposer)
+        """
         if user:
             return self.owner if self.owner != user else self.second_user
         return self.owner if self.owner != exposed_request.user else self.second_user

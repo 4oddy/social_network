@@ -1,5 +1,6 @@
 const group_name = JSON.parse(document.getElementById('group_name').textContent);
 const group_type = JSON.parse(document.getElementById('group_type').textContent);
+const chat = document.querySelector('#chat_messages');
 
         const chatSocket = new WebSocket(
             'ws://'
@@ -12,11 +13,13 @@ const group_type = JSON.parse(document.getElementById('group_type').textContent)
 
         chatSocket.onmessage = function(e) {
             const data = JSON.parse(e.data);
-            document.querySelector('#chat-log').value += (data.sender_dict['username'] + ': ' + data.message + '\n');
+            chat.innerHTML += `<p> <a href="${data.sender_dict['profile_url']}"> <img src="${data.sender_dict['image_url']}" style="    width: 60px;
+    height: 60px;
+    border-radius: 100px;"> </a> ${data.sender_dict['username']}: ${data.message} </p>`
         };
 
         chatSocket.onclose = function(e) {
-            console.error('Chat socket closed unexpectedly');
+            console.error('Chat closed unexpectedly');
         };
 
         document.querySelector('#chat-message-input').focus();
@@ -28,9 +31,12 @@ const group_type = JSON.parse(document.getElementById('group_type').textContent)
 
         document.querySelector('#chat-message-submit').onclick = function(e) {
             const messageInputDom = document.querySelector('#chat-message-input');
-            const message = messageInputDom.value;
-            chatSocket.send(JSON.stringify({
-                'message': message
-            }));
-            messageInputDom.value = '';
+            const message = messageInputDom.value.replace(/(<([^>]+)>)/gi, "");;
+
+            if (message.trim().length > 0) {
+                chatSocket.send(JSON.stringify({
+                    'message': message
+                }));
+                messageInputDom.value = '';
+            }
         };
