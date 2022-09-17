@@ -2,6 +2,8 @@ from django.utils import timezone
 from django.contrib.auth.backends import BaseBackend
 from django.contrib.auth import get_user_model
 
+from .services import send_email_login
+
 User = get_user_model()
 
 
@@ -30,6 +32,7 @@ class CustomBackend(BaseBackend):
             # setting last online
             if user.check_password(password) is True:
                 user.last_online = timezone.now()
+                send_email_login(user)
                 return user
             return None
 

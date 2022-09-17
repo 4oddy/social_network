@@ -4,8 +4,6 @@ from django.views.generic import TemplateView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic import View, DetailView
 from django.contrib.auth.views import LoginView
-from django.contrib.auth import login as auth_login
-from django.http import HttpResponseRedirect
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404, reverse
 from django.http import HttpResponseForbidden
@@ -135,15 +133,6 @@ class UserSettingsPage(LoginRequiredMixin, UpdateView):
 class CustomLoginPage(LoginView):
     template_name = 'login_page.html'
     form_class = CustomAuthenticationForm
-
-    def form_valid(self, form):
-        """Security check complete. Log the user in."""
-        user = form.get_user()
-        auth_login(self.request, user)
-
-        send_email_login(user)
-
-        return HttpResponseRedirect(self.get_success_url())
 
 
 class FindUserPage(LoginRequiredMixin, View):
