@@ -16,7 +16,7 @@ User = get_user_model()
 
 class AbstractGetter(ABC):
     @abstractmethod
-    async def get_group(self, name: str, owner: User) -> AbstractDialog:
+    async def get_group(self, name: str | User, owner: User) -> AbstractDialog:
         pass
 
 
@@ -46,20 +46,43 @@ class GetterDialogs(AbstractGetter):
     """ Class to manage logic of getting dialogs"""
 
     @sync_to_async
-    def get_group(self, companion_name: str, user: User) -> Dialog:
-        if companion_name == user.username:
-            raise SelfDialogCreated('Пользователь не может начать диалог с самим собой')
+    def get_group(self, user: User, companion: User | None = None, companion_username: str | None = None) -> Dialog:
+        if companion:
+            if companion.username == user.username:
+                raise SelfDialogCreated('Пользователь не может начать диалог с самим собой')
 
-        dialog: Dialog = Dialog.objects.filter(Q(owner=user) & Q(name=companion_name) &
-                                               Q(second_user__username=companion_name) |
-                                               Q(owner__username=companion_name) & Q(name=user.username) &
-                                               Q(second_user=user)).first()
+            dialog: Dialog = Dialog.objects.select_related('owner', 'second_user').filter(
+                Q(owner=user) &
+                Q(name=companion.username) &
+                Q(second_user=companion) |
+                Q(owner=companion) & Q(name=user.username) &
+                Q(second_user=user)).first()
 
-        if dialog is None:
-            second_user: User = get_object_or_404(User, username=companion_name)
+            if dialog is None:
+                dialog = Dialog.objects.create(name=companion.username,
+                                               owner=user,
+                                               second_user=companion)
 
-            if user in second_user.friends.all() and second_user in user.friends.all():
-                dialog = Dialog.objects.create(name=companion_name, owner=user, second_user=second_user)
+        elif companion_username:
+            if companion_username == user.username:
+                raise SelfDialogCreated('Пользователь не может начать диалог с самим собой')
+
+            dialog: Dialog = Dialog.objects.select_related('owner', 'second_user').filter(
+                Q(owner=user) &
+                Q(name=companion_username) &
+                Q(second_user__username=companion_username) |
+                Q(owner__username=companion_username) &
+                Q(name=user.username) &
+                Q(second_user=user)).first()
+
+            if dialog is None:
+                second_user = get_object_or_404(User, username=companion_username)
+                dialog = Dialog.objects.create(name=companion_username,
+                                               owner=user,
+                                               second_user=second_user)
+
+        else:
+            raise TypeError('You have to define companion or companion_username')
 
         return dialog
 

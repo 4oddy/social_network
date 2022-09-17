@@ -70,7 +70,7 @@ class DialogConsumer(BaseChatConsumer):
     async def connect(self):
         self.user: str = self.scope['user']
         self.group_name: str = self.scope['url_route']['kwargs']['group_name']
-        self.group: Dialog = await self._getter.get_group(self.group_name, self.user)
+        self.group: Dialog = await self._getter.get_group(companion_username=self.group_name, user=self.user)
 
         await self.channel_layer.group_add(
             self.group.uid,

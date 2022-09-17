@@ -21,16 +21,16 @@ def find_friend_request(first_user: User = None, second_user: User = None,
 
     if first_user and second_user:
         request = FriendRequest.objects.filter(Q(from_user=first_user) & Q(to_user=second_user) |
-                                               Q(from_user=second_user) | Q(to_user=first_user)).first()
+                                               Q(from_user=second_user) & Q(to_user=first_user)).first()
     elif first_user and second_user_id:
         request = FriendRequest.objects.filter(Q(from_user=first_user) & Q(to_user_id=second_user_id) |
                                                Q(from_user_id=second_user_id) & Q(to_user=first_user)).first()
     elif first_user_id and second_user:
         request = FriendRequest.objects.filter(Q(from_user_id=first_user_id) & Q(to_user=second_user) |
-                                               Q(from_user=second_user) | Q(to_user_id=first_user_id)).first()
+                                               Q(from_user=second_user) & Q(to_user_id=first_user_id)).first()
     elif first_user_id and second_user_id:
         request = FriendRequest.objects.filter(Q(from_user_id=first_user_id) & Q(to_user_id=second_user_id) |
-                                               Q(from_user_id=second_user_id) | Q(to_user_id=first_user_id)).first()
+                                               Q(from_user_id=second_user_id) & Q(to_user_id=first_user_id)).first()
 
     return request
 
@@ -71,8 +71,13 @@ def create_friend_request(from_user: User = None, from_user_id: User = None,
             request = FriendRequest.objects.create(from_user_id=from_user_id, to_user_id=to_user_id)
 
     if settings.SEND_EMAILS:
-        to_user = get_object_or_404(User, pk=to_user_id)
+        if not to_user:
+            to_user = get_object_or_404(User, pk=to_user_id)
+
         name = to_user.first_name if to_user.first_name else to_user.username
+
+        if not from_user:
+            from_user = get_object_or_404(User, pk=from_user_id)
 
         username = from_user.username
 
