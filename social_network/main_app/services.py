@@ -1,6 +1,7 @@
 from django.db.models import Q, QuerySet
 from django.contrib.auth import get_user_model
 from django.conf import settings
+from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 
 from .models import FriendRequest
@@ -15,8 +16,8 @@ def find_users(username: str) -> QuerySet:
     return queryset
 
 
-def find_friend_request(first_user: User = None, second_user: User = None,
-                        first_user_id: int = None, second_user_id: int = None) -> FriendRequest:
+def find_friend_request(first_user: User | None = None, second_user: User | None = None,
+                        first_user_id: int | None = None, second_user_id: int | None = None) -> FriendRequest:
     request = None
 
     if first_user and second_user:
@@ -36,7 +37,7 @@ def find_friend_request(first_user: User = None, second_user: User = None,
 
 
 # func to get data from hidden form's fields
-def get_data_for_action(request) -> dict:
+def get_data_for_action(request: HttpRequest) -> dict:
     user_path = request.POST['current_path']
     from_user_id = request.user.pk
     from_user = request.user
@@ -50,8 +51,8 @@ def get_username_from_kwargs(kwargs: dict) -> str:
     return kwargs['username'].replace('@', '')
 
 
-def create_friend_request(from_user: User = None, from_user_id: User = None,
-                          to_user: User = None, to_user_id: User = None) -> FriendRequest:
+def create_friend_request(from_user: User | None = None, from_user_id: User | None = None,
+                          to_user: User | None = None, to_user_id: User | None = None) -> FriendRequest:
     request = None
 
     if from_user and to_user:

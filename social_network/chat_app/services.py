@@ -30,7 +30,7 @@ class GetterConservations(AbstractGetter):
     """ Class to manage logic of getting conservations """
 
     @sync_to_async
-    def get_group(self, name: str, owner: User) -> Conservation:
+    def get_group(self, name: str, owner: User | None) -> Conservation:
         if owner is not None:
             group = get_object_or_404(Conservation, owner=owner, name=name)
         else:
