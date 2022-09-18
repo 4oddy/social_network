@@ -15,7 +15,7 @@ from .forms import (CustomUserCreationForm, FindUserForm, CustomAuthenticationFo
                     UserSettingsForm, PostCreatingForm, PostEditingForm)
 
 from .services import (find_users, get_data_for_action,
-                       get_username_from_kwargs, create_friend_request, send_email_login,
+                       get_username_from_kwargs, create_friend_request,
                        send_email_changed_settings, delete_from_friendship)
 
 User = get_user_model()
