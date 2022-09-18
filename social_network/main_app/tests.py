@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 from datetime import datetime
 
 from .models import FriendRequest
-from .services import create_friend_request
+from .services import create_friend_request, delete_from_friendship, find_friend_request, in_friendship
 
 User = get_user_model()
 
@@ -45,14 +45,21 @@ class TestUser(TestCase):
     def test_friend_request(self):
         for user in self.users_queryset:
             if user != self.user:
+                # test if request created
                 request = FriendRequest.objects.create(from_user=self.user, to_user=user)
                 self.assertEqual(request.request_status, 'c')
 
+                # test if request accepted
                 request.accept()
                 self.assertEqual(request.request_status, 'a')
 
-                expression = self.user in user.friends.all()
-                self.assertTrue(expression)
+                # test if in friendship
+                self.assertTrue(in_friendship(self.user, user))
+
+                # test deletion from friendship
+                delete_from_friendship(self.user, user)
+                self.assertFalse(find_friend_request(first_user=self.user, second_user=user))
+                self.assertFalse(in_friendship(self.user, user))
 
     def test_custom_friend_request_first(self):
         for user in self.users_queryset:
@@ -63,8 +70,11 @@ class TestUser(TestCase):
                 request.accept()
                 self.assertEqual(request.request_status, 'a')
 
-                expression = self.user in user.friends.all()
-                self.assertTrue(expression)
+                self.assertTrue(in_friendship(self.user, user))
+
+                delete_from_friendship(self.user, user)
+                self.assertFalse(find_friend_request(first_user=self.user, second_user_id=user.pk))
+                self.assertFalse(in_friendship(self.user, user))
 
     def test_custom_friend_request_second(self):
         for user in self.users_queryset:
@@ -75,8 +85,11 @@ class TestUser(TestCase):
                 request.accept()
                 self.assertEqual(request.request_status, 'a')
 
-                expression = self.user in user.friends.all()
-                self.assertTrue(expression)
+                self.assertTrue(in_friendship(self.user, user))
+
+                delete_from_friendship(self.user, user)
+                self.assertFalse(find_friend_request(first_user=self.user, second_user=user))
+                self.assertFalse(in_friendship(self.user, user))
 
     def test_custom_friend_request_third(self):
         for user in self.users_queryset:
@@ -87,8 +100,11 @@ class TestUser(TestCase):
                 request.accept()
                 self.assertEqual(request.request_status, 'a')
 
-                expression = self.user in user.friends.all()
-                self.assertTrue(expression)
+                self.assertTrue(in_friendship(self.user, user))
+
+                delete_from_friendship(self.user, user)
+                self.assertFalse(find_friend_request(first_user_id=self.user.pk, second_user=user))
+                self.assertFalse(in_friendship(self.user, user))
 
     def test_custom_friend_request_fourth(self):
         for user in self.users_queryset:
@@ -99,5 +115,8 @@ class TestUser(TestCase):
                 request.accept()
                 self.assertEqual(request.request_status, 'a')
 
-                expression = self.user in user.friends.all()
-                self.assertTrue(expression)
+                self.assertTrue(in_friendship(self.user, user))
+
+                delete_from_friendship(self.user, user)
+                self.assertFalse(find_friend_request(first_user_id=self.user.pk, second_user_id=user.pk))
+                self.assertFalse(in_friendship(self.user, user))

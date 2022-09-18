@@ -11,6 +11,10 @@ from .tasks import send_email
 User = get_user_model()
 
 
+def in_friendship(first: User, second: User) -> bool:
+    return first in second.friends.all() and second in first.friends.all()
+
+
 def find_users(username: str) -> QuerySet:
     queryset = User.objects.filter(username__icontains=username)
     return queryset
@@ -110,7 +114,7 @@ def send_email_changed_settings(user: User) -> None:
 
 
 def delete_from_friendship(first: User, second: User) -> None:
-    request = find_friend_request(first, second)
+    request = find_friend_request(first_user=first, second_user=second)
 
     if request:
         request.delete()
