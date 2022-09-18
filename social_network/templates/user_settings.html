@@ -1,5 +1,7 @@
 {% extends 'base_template.html' %}
 
+{% load static %}
+
 {% block other_styles %}
     {% load crispy_forms_tags %}
 {% endblock %}
@@ -18,9 +20,12 @@
     <form method="post" enctype="multipart/form-data" style="max-width: 350px; width: 350px;"> {% csrf_token %}
         {{ form|crispy }}
         <br>
+        <a href="" id="delete_image_anchor" style="color: #0B66E3; text-decoration: none;">Удалить фото профиля</a>
+        <br>
         <a href="{% url 'main:change_password_page' %}" style="color: #0B66E3; text-decoration: none;"> Изменить пароль </a>
         <br><br>
         <button class="btn btn-success">Применить</button>
     </form>
 </div>
+<script src="{% static 'js/delete_user_image.js' %}"></script>
 {% endblock %}

@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
@@ -6,7 +7,7 @@ from django.views.generic import View, DetailView
 from django.contrib.auth.views import LoginView
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404, reverse
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, HttpResponse, HttpResponseBadRequest
 
 from .models import FriendRequest, Post
 
@@ -128,6 +129,15 @@ class UserSettingsPage(LoginRequiredMixin, UpdateView):
 
     def get_success_url(self):
         return reverse('main:user_page', kwargs={'username': self.request.user.username})
+
+
+class DeleteProfileImage(LoginRequiredMixin, View):
+    def get(self, *args, **kwargs):
+        if self.request.user.image != settings.DEFAULT_USER_IMAGE:
+            self.request.user.image = settings.DEFAULT_USER_IMAGE
+            self.request.user.save()
+            return HttpResponse()
+        return HttpResponseBadRequest()
 
 
 class CustomLoginPage(LoginView):

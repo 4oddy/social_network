@@ -156,6 +156,8 @@ AUTHENTICATION_BACKENDS = (
     'main_app.backends.CustomBackend',
 )
 
+DEFAULT_USER_IMAGE = 'images/user_images/empty_staff.png'
+
 LOGIN_URL = '/main/accounts/login/'
 
 LOGIN_REDIRECT_URL = '/'

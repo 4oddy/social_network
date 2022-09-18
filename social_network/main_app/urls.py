@@ -5,7 +5,7 @@ from .views import (UserProfilePage, MainPage, RegisterUserPage,
                     FindUserPage, CreateFriendRequest, CancelFriendRequest,
                     AcceptFriendRequest, DenyFriendRequest, DeleteFriend,
                     FriendsListPage, CustomLoginPage, UserSettingsPage, CreatePost,
-                    PostPage, DeletePostPage, EditPostPage)
+                    PostPage, DeletePostPage, EditPostPage, DeleteProfileImage)
 
 from .forms import CustomPasswordResetForm
 
@@ -23,6 +23,7 @@ urlpatterns = [
     path('accounts/logout/', LogoutView.as_view(), name='logout_page'),
     path('accounts/register/', RegisterUserPage.as_view(), name='register_page'),
     path('accounts/settings/', UserSettingsPage.as_view(), name='user_settings_page'),
+    path('accounts/delete_user_image/', DeleteProfileImage.as_view(), name='delete_user_image'),
     path('accounts/change_password/', PasswordResetView.as_view(template_name='password/change_password.html',
                                                                 email_template_name=
                                                                 'password/password_reset_email.html',

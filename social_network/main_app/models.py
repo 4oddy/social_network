@@ -1,5 +1,6 @@
 from django.db import models
 
+from django.conf import settings
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
@@ -28,7 +29,7 @@ class CustomUser(AbstractUser):
 
     email = models.EmailField(unique=True, validators=[EmailValidator])
     image = models.ImageField(verbose_name='Фотография профиля',
-                              upload_to='images/user_images', default='images/user_images/empty_staff.png')
+                              upload_to='images/user_images', default=settings.DEFAULT_USER_IMAGE)
     last_online = models.DateTimeField(verbose_name='Последний онлайн',
                                        auto_now=True, blank=True, null=True)
     friends = models.ManyToManyField('self')
