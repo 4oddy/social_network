@@ -4,14 +4,15 @@ from django.contrib.auth import get_user_model
 
 from datetime import datetime
 
-from .models import FriendRequest
+from .models import FriendRequest, Post
 from .services import create_friend_request, delete_from_friendship, find_friend_request, in_friendship
 
 User = get_user_model()
 
 
 class TestUser(TestCase):
-    def setUp(self) -> None:
+    def setUp(self):
+        # creating main user
         self.username = f'test{datetime.now().strftime("%d%m%Y%H%M%S")}'
         self.password = self.username
         self.email = self.username + '@mail.ru'
@@ -19,6 +20,7 @@ class TestUser(TestCase):
         self.user = User.objects.create_user(username=self.username, email=self.email,
                                              password=self.password)
 
+        # creating 5 random users
         for i in range(5):
             self.username = f'test{datetime.now().strftime("%d%m%Y%H%M%S") + str(i)}'
             self.password = self.username
@@ -120,3 +122,22 @@ class TestUser(TestCase):
                 delete_from_friendship(self.user, user)
                 self.assertFalse(find_friend_request(first_user_id=self.user.pk, second_user_id=user.pk))
                 self.assertFalse(in_friendship(self.user, user))
+
+
+class TestPost(TestCase):
+    def setUp(self):
+        # creating main user
+        self.username = f'test{datetime.now().strftime("%d%m%Y%H%M%S")}'
+        self.password = self.username
+        self.email = self.username + '@mail.ru'
+
+        self.user = User.objects.create_user(username=self.username, email=self.email,
+                                             password=self.password)
+
+    def create_post(self, data):
+        self.client.post(reverse('main:create_post'), data=data)
+
+    def test_creating(self):
+        self.client.login(username=self.username, password=self.password)
+        self.create_post(data={'title': 'test_post', 'description': 'test'})
+        self.assertTrue(Post.objects.filter(owner=self.user, title='test_post').exists())
