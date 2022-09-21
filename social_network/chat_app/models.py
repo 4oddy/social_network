@@ -30,7 +30,8 @@ class AbstractDialog(models.Model):
 
         return super(AbstractDialog, self).save()
 
-    def _create_uuid(self):
+    @staticmethod
+    def _create_uuid():
         """ Generates unique uuid """
         uid = str(uuid.uuid4())[:23]
 

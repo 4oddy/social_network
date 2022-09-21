@@ -108,7 +108,7 @@ class FriendRequest(models.Model):
 
 class Post(models.Model):
     title = models.CharField(verbose_name='Заголовок', max_length=50, null=True, blank=True)
-    description = models.CharField(verbose_name='Текст', max_length=150, null=True, blank=True)
+    description = models.TextField(verbose_name='Текст', null=True, blank=True)
     owner = models.ForeignKey(CustomUser, verbose_name='Автор',
                               null=False, blank=False, on_delete=models.CASCADE, related_name='posts')
     post_uuid = models.CharField(max_length=23, unique=True, default=None)
@@ -133,13 +133,11 @@ class Post(models.Model):
         if len(str(self.title)) > 50:
             raise ValidationError({'title': 'Максимальная длина: 50'})
 
-        if len(str(self.description)) > 150:
-            raise ValidationError({'description': 'Максимальная длина: 150'})
-
     def get_absolute_url(self):
         return reverse('main:post_page', kwargs={'post_uuid': self.post_uuid})
 
-    def _create_uuid(self):
+    @staticmethod
+    def _create_uuid():
         """ Generates unique uuid """
         post_uuid = str(uuid.uuid4())[:23]
 
