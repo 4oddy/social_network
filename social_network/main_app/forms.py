@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, UsernameField, PasswordResetForm
 
-from .models import CustomUser, Post
+from .models import CustomUser, Post, Comment
 from .validators import custom_username_validator
 from .tasks import send_password_reset_email
 from core.forms import BaseForm
@@ -53,7 +53,7 @@ class PostCreatingForm(BaseForm):
         fields = ('title', 'description')
 
 
-class PostEditingForm(BaseForm):
+class PostEditingForm(forms.ModelForm):
     class Meta:
         model = Post
         fields = ('title', 'description')
@@ -77,3 +77,9 @@ class CustomPasswordResetForm(PasswordResetForm):
                                         email_template_name=email_template_name,
                                         context=context, from_email=from_email, to_email=to_email,
                                         html_email_template_name=html_email_template_name)
+
+
+class CommentForm(forms.ModelForm):
+    class Meta:
+        model = Comment
+        fields = ('text', )

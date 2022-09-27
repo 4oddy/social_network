@@ -135,9 +135,15 @@ class TestPost(TestCase):
                                              password=self.password)
 
     def create_post(self, data):
-        self.client.post(reverse('main:create_post'), data=data)
+        response = self.client.post(reverse('main:create_post'), data=data)
+        return response
 
-    def test_creating(self):
+    def test_creating_positive(self):
         self.client.login(username=self.username, password=self.password)
         self.create_post(data={'title': 'test_post', 'description': 'test'})
         self.assertTrue(Post.objects.filter(owner=self.user, title='test_post').exists())
+
+    def test_creating_negative(self):
+        self.client.login(username=self.username, password=self.password)
+        self.create_post({'title': '', 'description': ''})
+        self.assertFalse(Post.objects.filter(owner=self.user).exists())

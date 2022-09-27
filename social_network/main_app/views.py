@@ -9,10 +9,10 @@ from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404, reverse
 from django.http import HttpResponseForbidden, HttpResponse, HttpResponseBadRequest
 
-from .models import FriendRequest, Post
+from .models import FriendRequest, Post, Comment
 
 from .forms import (CustomUserCreationForm, FindUserForm, CustomAuthenticationForm,
-                    UserSettingsForm, PostCreatingForm, PostEditingForm)
+                    UserSettingsForm, PostCreatingForm, PostEditingForm, CommentForm)
 
 from .services import (find_users, get_data_for_action,
                        get_username_from_kwargs, create_friend_request,
@@ -85,6 +85,8 @@ class UserProfilePage(LoginRequiredMixin, TemplateView):
         if posts.exists():
             context['posts'] = posts[::-1]
             context['allowed_to_edit'] = True if own_profile else False
+            context['comments'] = Comment.objects.select_related('owner', 'post').filter(post__owner=user)
+            context['comments_amount'] = 0
 
         return context
 
@@ -244,10 +246,14 @@ class PostPage(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
         context['allowed_to_edit'] = False
 
         if self.request.user == self.get_object().owner:
             context['allowed_to_edit'] = True
+
+        comments = Comment.objects.select_related('owner').filter(post__post_uuid=self.kwargs['post_uuid'])
+        context['comments'] = comments
 
         return context
 
@@ -285,3 +291,19 @@ class EditPostPage(LoginRequiredMixin, UpdateView):
         if self.request.user == self.get_object().owner:
             return super().render_to_response(context, **response_kwargs)
         return HttpResponseForbidden('Вы не можете изменять эту запись')
+
+
+class CreateComment(LoginRequiredMixin, CreateView):
+    template_name = 'comment_creating_page.html'
+    form_class = CommentForm
+
+    def form_valid(self, form):
+        user = self.request.user
+        obj = form.save(commit=False)
+        obj.owner = user
+        obj.post = get_object_or_404(Post, post_uuid=self.kwargs['post_uuid'])
+        obj.save()
+        return redirect(self.get_success_url())
+
+    def get_success_url(self):
+        return reverse('main:post_page', kwargs={'post_uuid': self.kwargs['post_uuid']})

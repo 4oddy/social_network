@@ -30,5 +30,9 @@
                 <p align="right" style="padding-right: 100px;">
                     {{ post.date_of_creating }}
                     </p>
-                                        </a>
-                    </div>
+                    <p align="right" style="padding-right: 100px;">
+                        <a href="{% url 'main:create_comment' post.post_uuid %}" style="text-decoration: none; color: #0B66E3;">
+                            Оставить комментарий
+                        </a>
+                    </p>
+                </a>

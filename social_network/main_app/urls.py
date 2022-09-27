@@ -5,7 +5,7 @@ from .views import (UserProfilePage, MainPage, RegisterUserPage,
                     FindUserPage, CreateFriendRequest, CancelFriendRequest,
                     AcceptFriendRequest, DenyFriendRequest, DeleteFriend,
                     FriendsListPage, CustomLoginPage, UserSettingsPage, CreatePost,
-                    PostPage, DeletePostPage, EditPostPage, DeleteProfileImage)
+                    PostPage, DeletePostPage, EditPostPage, DeleteProfileImage, CreateComment)
 
 from .forms import CustomPasswordResetForm
 
@@ -49,5 +49,6 @@ urlpatterns = [
     path('posts/create_post/', CreatePost.as_view(), name='create_post'),
     path('posts/<slug:post_uuid>/', PostPage.as_view(), name='post_page'),
     path('posts/<slug:post_uuid>/delete/', DeletePostPage.as_view(), name='delete_post_page'),
-    path('posts/<slug:post_uuid>/edit/', EditPostPage.as_view(), name='edit_post_page')
+    path('posts/<slug:post_uuid>/edit/', EditPostPage.as_view(), name='edit_post_page'),
+    path('posts/<slug:post_uuid>/create_comment/', CreateComment.as_view(), name='create_comment')
 ]

@@ -15,30 +15,13 @@ class AbstractDialog(models.Model):
     name = models.CharField(verbose_name='Имя', max_length=50)
     owner = models.ForeignKey(User, verbose_name='Создатель', null=True, on_delete=models.SET_NULL)
     date_of_creating = models.DateTimeField(verbose_name='Дата создания', auto_now_add=True)
-    uid = models.CharField(max_length=23, unique=True, default=None)
+    uid = models.UUIDField(unique=True, editable=False, default=uuid.uuid4)
 
     class Meta:
         abstract = True
 
     def __str__(self):
         return self.name
-
-    def save(
-        self, force_insert=False, force_update=False, using=None, update_fields=None
-    ):
-        self.uid = self._create_uuid()
-
-        return super(AbstractDialog, self).save()
-
-    @staticmethod
-    def _create_uuid():
-        """ Generates unique uuid """
-        uid = str(uuid.uuid4())[:23]
-
-        while Dialog.objects.filter(uid=uid).exists():
-            uid = str(uuid.uuid4())[:23]
-
-        return uid
 
 
 class AbstractMessage(models.Model):

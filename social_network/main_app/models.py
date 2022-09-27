@@ -111,20 +111,13 @@ class Post(models.Model):
     description = models.TextField(verbose_name='Текст', null=True, blank=True)
     owner = models.ForeignKey(CustomUser, verbose_name='Автор',
                               null=False, blank=False, on_delete=models.CASCADE, related_name='posts')
-    post_uuid = models.CharField(max_length=23, unique=True, default=None)
+    post_uuid = models.UUIDField(unique=True, editable=False, default=uuid.uuid4)
     date_of_creating = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
     date_of_update = models.DateTimeField(auto_now=True, verbose_name='Дата обновления')
 
     class Meta:
         verbose_name = 'Запись'
         verbose_name_plural = 'Записи'
-
-    def save(
-        self, force_insert=False, force_update=False, using=None, update_fields=None
-    ):
-        self.post_uuid = self._create_uuid()
-
-        return super(Post, self).save()
 
     def clean(self):
         if not self.title and not self.description:
@@ -136,12 +129,17 @@ class Post(models.Model):
     def get_absolute_url(self):
         return reverse('main:post_page', kwargs={'post_uuid': self.post_uuid})
 
-    @staticmethod
-    def _create_uuid():
-        """ Generates unique uuid """
-        post_uuid = str(uuid.uuid4())[:23]
 
-        while Post.objects.filter(post_uuid=post_uuid).exists():
-            post_uuid = str(uuid.uuid4())[:23]
+class Comment(models.Model):
+    owner = models.ForeignKey(CustomUser, verbose_name='Владелец', related_name='comments', on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, verbose_name='Пост', related_name='post_comments', on_delete=models.CASCADE)
+    text = models.CharField(verbose_name='Текст', max_length=200)
+    uid = models.UUIDField(unique=True, editable=False, default=uuid.uuid4)
 
-        return post_uuid
+    class Meta:
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
+
+    def clean(self):
+        if len(self.text) > 200:
+            raise ValidationError({'text': 'Максимальная длина: 200'})

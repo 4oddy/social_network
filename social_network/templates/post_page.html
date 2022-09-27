@@ -4,4 +4,15 @@
 
 {% block content %}
     {% include 'post_template.html' %}
+{% if comments %}
+    {% for comment in comments %}
+        {% if comment.post == post %}
+            {{ comment.owner }}: {{ comment.text }}
+<br>
+        {% endif %}
+    {% endfor %}
+{% else %}
+    Нет комментариев
+{% endif %}
+</div>
 {% endblock %}

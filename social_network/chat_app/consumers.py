@@ -20,9 +20,10 @@ class BaseChatConsumer(AsyncWebsocketConsumer):
         self.user: str = self.scope['user']
         self.group_name: str = self.scope['url_route']['kwargs']['group_name']
         self.group: AbstractDialog = await self._getter.get_group(self.group_name, None)
+        self.group_uuid = str(self.group.uid)
 
         await self.channel_layer.group_add(
-            self.group.uid,
+            self.group_uuid,
             self.channel_name
         )
 
@@ -30,7 +31,7 @@ class BaseChatConsumer(AsyncWebsocketConsumer):
 
     async def disconnect(self, code):
         await self.channel_layer.group_discard(
-            self.group.uid,
+            self.group_uuid,
             self.channel_name
         )
 
@@ -71,9 +72,10 @@ class DialogConsumer(BaseChatConsumer):
         self.user: str = self.scope['user']
         self.group_name: str = self.scope['url_route']['kwargs']['group_name']
         self.group: Dialog = await self._getter.get_group(companion_username=self.group_name, user=self.user)
+        self.group_uuid = str(self.group.uid)
 
         await self.channel_layer.group_add(
-            self.group.uid,
+            self.group_uuid,
             self.channel_name
         )
 
