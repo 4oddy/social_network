@@ -21,8 +21,13 @@ from .services import (find_users, get_data_for_action,
 User = get_user_model()
 
 
-class MainPage(TemplateView):
+class MainPage(LoginRequiredMixin, TemplateView):
     template_name = 'main_page.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['posts'] = Post.objects.select_related('owner').filter(owner__friends=self.request.user)[::-1]
+        return context
 
 
 class UserProfilePage(LoginRequiredMixin, TemplateView):

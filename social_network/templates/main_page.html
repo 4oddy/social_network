@@ -9,6 +9,13 @@
 	<link rel="stylesheet" type="text/css" href="{% static 'mainpage.css' %}">
 {% endblock %}
 
-{% block content %} <h1 align="center">Главная страница</h1>
+{% block content %} <h1 align="center">Главная страница</h1> <br>
+
+{% for post in posts %}
+    {% include 'post_template.html' %}
+                        Нажмите на пост, чтобы просмотреть комментарии
+    </div>
+<br>
+{% endfor %}
 				
  {% endblock %}
