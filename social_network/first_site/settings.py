@@ -35,11 +35,12 @@ INSTALLED_APPS = [
     'main_app.apps.MainAppConfig',
     'chat_app.apps.ChatAppConfig',
 
-    # another apps
+    # others
     'crispy_forms',
     'captcha',
     'django_cleanup.apps.CleanupConfig',
-    'channels'
+    'channels',
+    'django_user_agents'
 ]
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
@@ -53,7 +54,11 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
-    'core.middleware.request_exposer.RequestExposerMiddleware'
+    'django_user_agents.middleware.UserAgentMiddleware',
+
+    # project middlewares
+    'core.middleware.request_exposer.RequestExposerMiddleware',
+    'core.middleware.device_exposer.DeviceExposerMiddleware',
 ]
 
 ROOT_URLCONF = 'first_site.urls'

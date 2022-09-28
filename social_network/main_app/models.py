@@ -15,6 +15,10 @@ import uuid
 
 
 class CustomUser(AbstractUser):
+    class Devices(models.TextChoices):
+        PC = 'pc', 'Computer'
+        MOBILE = 'mobile', 'Mobile'
+
     username_validator = UnicodeUsernameValidator()
 
     username = models.CharField(
@@ -32,6 +36,7 @@ class CustomUser(AbstractUser):
                               upload_to='images/user_images', default=settings.DEFAULT_USER_IMAGE)
     last_online = models.DateTimeField(verbose_name='Последний онлайн',
                                        auto_now=True, blank=True, null=True)
+    device = models.CharField(verbose_name='Устройство', max_length=6, choices=Devices.choices, default=Devices.PC)
     friends = models.ManyToManyField('self')
 
     class Meta:
@@ -45,6 +50,12 @@ class CustomUser(AbstractUser):
     def is_online(self):
         if self.last_online:
             return (timezone.now() - self.last_online) < timezone.timedelta(minutes=2)
+        return False
+
+    @property
+    def is_mobile(self):
+        if self.device == self.Devices.MOBILE:
+            return True
         return False
 
     def clean(self):
@@ -68,17 +79,17 @@ class CustomUser(AbstractUser):
 
 
 class FriendRequest(models.Model):
-    request_statuses = (
-        ('c', 'CREATED'),
-        ('a', 'ACCEPTED'),
-        ('d', 'DENIED')
-    )
+    class RequestStatuses(models.TextChoices):
+        CREATED = 'c', 'CREATED'
+        ACCEPTED = 'a', 'ACCEPTED'
+        DENIED = 'd', 'DENIED'
 
     from_user = models.ForeignKey(CustomUser, verbose_name='От кого',
                                   related_name='from_user_request', on_delete=models.CASCADE)
     to_user = models.ForeignKey(CustomUser, verbose_name='Кому',
                                 related_name='to_user_request', on_delete=models.CASCADE)
-    request_status = models.CharField(verbose_name='Статус заявки', max_length=1, choices=request_statuses, default='c')
+    request_status = models.CharField(verbose_name='Статус заявки', max_length=1, choices=RequestStatuses.choices,
+                                      default=RequestStatuses.CREATED)
     date_of_request = models.DateTimeField(verbose_name='Дата заявки', auto_now_add=True)
 
     class Meta:
