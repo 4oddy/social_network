@@ -2,7 +2,7 @@ from django.utils import timezone
 from django.contrib.auth.backends import BaseBackend
 from django.contrib.auth import get_user_model
 
-from .services import send_email_login
+from main_app.services import send_email_login
 
 User = get_user_model()
 

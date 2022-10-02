@@ -16,7 +16,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-SEND_EMAILS = False
+SEND_EMAILS = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     # project apps
     'main_app.apps.MainAppConfig',
     'chat_app.apps.ChatAppConfig',
+    'core.apps.CoreConfig',
 
     # others
     'crispy_forms',
@@ -158,7 +159,7 @@ MEDIA_ROOT = ''
 AUTH_USER_MODEL = 'main_app.CustomUser'
 
 AUTHENTICATION_BACKENDS = (
-    'main_app.backends.CustomBackend',
+    'core.backends.CustomBackend',
 )
 
 DEFAULT_USER_IMAGE = 'images/user_images/empty_staff.png'
