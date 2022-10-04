@@ -32,9 +32,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     # project apps
+    'core.apps.CoreConfig',
     'main_app.apps.MainAppConfig',
     'chat_app.apps.ChatAppConfig',
-    'core.apps.CoreConfig',
 
     # others
     'crispy_forms',
