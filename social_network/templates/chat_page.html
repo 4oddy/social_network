@@ -43,6 +43,8 @@
                 <p><a href="{{ message.sender.get_absolute_url }}"><img src="{{ message.sender.image.url }}" style="    width: 60px;
         height: 60px;
         border-radius: 100px;"> </a> {{ message.sender }}: {{ message.text }}</p>
+    <p style="padding-right: 20px;" align="right">
+{{ message.date_of_sending|date:'d.m.Y H:i:s' }} </p>
             {% endfor %}
         {% else %}
     <p align="center">Напишите первое сообщение</p>

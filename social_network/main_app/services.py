@@ -5,7 +5,7 @@ from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 
 from .models import FriendRequest
-from .utils import get_current_date
+from core.utils import get_current_date
 from .tasks import send_email
 
 User = get_user_model()

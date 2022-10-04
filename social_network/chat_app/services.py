@@ -11,6 +11,8 @@ from django.db.models import Q, QuerySet
 from .models import AbstractDialog, AbstractMessage, Conservation, ConservationMessage, Dialog, DialogMessage
 from .exceptions import SelfDialogCreated
 
+from core.utils import get_current_date
+
 User = get_user_model()
 
 
@@ -120,13 +122,15 @@ class SenderMessages:
         self._channel_layer = get_channel_layer()
 
     async def send_message(self, sender: User, message: str, group: AbstractDialog) -> None:
-        sender_dict: dict = await sync_to_async(model_to_dict)(sender, fields=('username', ))
+        sender_dict: dict = await sync_to_async(model_to_dict)(sender, fields=('username',))
         sender_dict['image_url'] = sender.image.url
         sender_dict['profile_url'] = sender.get_absolute_url()
 
         group_uuid = str(group.uid)
 
         await self._saver.save_message(user=sender, message=message, group=group)
+
+        sender_dict['date'] = get_current_date()
 
         await self._channel_layer.group_send(
             group_uuid,

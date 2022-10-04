@@ -15,7 +15,7 @@ const chat = document.querySelector('#chat_messages');
             const data = JSON.parse(e.data);
             chat.innerHTML += `<p> <a href="${data.sender_dict['profile_url']}"> <img src="${data.sender_dict['image_url']}" style="    width: 60px;
     height: 60px;
-    border-radius: 100px;"> </a> ${data.sender_dict['username']}: ${data.message} </p>`
+    border-radius: 100px;"> </a> ${data.sender_dict['username']}: ${data.message} </p> <p style="padding-right: 20px;" align="right"> ${data.sender_dict['date']} </p>`
         };
 
         chatSocket.onclose = function(e) {
