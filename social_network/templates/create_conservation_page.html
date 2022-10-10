@@ -1,0 +1,28 @@
+{% extends 'base_template.html' %}
+
+{% block title %} Создание беседы {% endblock %}
+
+{% block other_styles %}
+    {% load crispy_forms_tags %}
+{% endblock %}
+
+{% block content %}
+
+<div class="container" style="margin: 0 auto; display: flex; align-items: center;
+  justify-content: center;
+  text-align: center;
+   height: 300px;
+  max-height: 100%;
+  width: 400px;
+  background-color: white;
+  border-radius: 10px;">
+    <form method="post">{% csrf_token %}
+        {{ form|crispy }}
+        <br>
+            <button type="submit" class="btn btn-success"
+            style="top: 50%;
+                   left: 50%;">Создать</button>
+    </form>
+</div>
+
+{% endblock %}

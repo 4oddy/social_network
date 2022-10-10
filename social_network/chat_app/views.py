@@ -1,11 +1,12 @@
 from django.http import HttpResponseBadRequest, HttpResponseForbidden
-from django.shortcuts import get_object_or_404, render
-from django.views.generic import TemplateView, View
+from django.shortcuts import get_object_or_404, render, reverse, redirect
+from django.views.generic import TemplateView, View, CreateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import get_user_model
 
 from .models import ConservationMessage, Conservation, DialogMessage, Dialog
 from .services import GetterDialogs, GetterConservations
+from .forms import CreateConservationForm
 
 User = get_user_model()
 
@@ -27,6 +28,12 @@ class ConservationPage(LoginRequiredMixin, TemplateView):
             group__name=group_name)
 
         return context
+
+    def render_to_response(self, context, **response_kwargs):
+        if self.request.user not in context['conservation'].members.all():
+            if self.request.user != context['conservation'].owner:
+                return HttpResponseForbidden()
+        return super().render_to_response(context, **response_kwargs)
 
 
 class DialogPage(LoginRequiredMixin, View):
@@ -73,3 +80,23 @@ class UserGroupsPage(LoginRequiredMixin, TemplateView):
         context['dialogs'] = user_dialogs
 
         return context
+
+
+class CreateConservationPage(LoginRequiredMixin, CreateView):
+    template_name = 'create_conservation_page.html'
+    form_class = CreateConservationForm
+
+    def get_form(self, form_class=None):
+        form = self.get_form_class()(self.request.POST if self.request.POST else None)
+        form.fields['members'].queryset = self.request.user.friends.all()
+        return form
+
+    def form_valid(self, form):
+        obj = form.save(commit=False)
+        obj.owner = self.request.user
+        obj.save()
+        form.save_m2m()
+        return redirect(self.get_success_url())
+
+    def get_success_url(self):
+        return reverse('chat:groups_page')

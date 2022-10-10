@@ -41,7 +41,7 @@ class GetterConservations(AbstractGetter):
 
     @staticmethod
     def get_user_conservations(user: User) -> QuerySet:
-        return Conservation.objects.filter(members=user)
+        return Conservation.objects.filter(Q(members=user) | Q(owner=user))
 
 
 class GetterDialogs(AbstractGetter):

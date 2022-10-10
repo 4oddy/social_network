@@ -123,6 +123,16 @@ class TestUser(TestCase):
                 self.assertFalse(find_friend_request(first_user_id=self.user.pk, second_user_id=user.pk))
                 self.assertFalse(in_friendship(self.user, user))
 
+    def test_negative_friend_request(self):
+        user = self.users_queryset.first()
+
+        list_of_requests = [create_friend_request(from_user=user, to_user=user),
+                            create_friend_request(from_user=user, to_user_id=user.pk),
+                            create_friend_request(from_user_id=user.pk, to_user=user),
+                            create_friend_request(from_user_id=user.pk, to_user_id=user.pk)]
+
+        self.assertFalse(any(list_of_requests))
+
 
 class TestPost(TestCase):
     def setUp(self):
