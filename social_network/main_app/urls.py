@@ -1,4 +1,4 @@
-from django.urls import path, reverse_lazy
+from django.urls import path, reverse_lazy, include
 from django.contrib.auth.views import LogoutView, PasswordResetView, PasswordResetConfirmView, PasswordResetDoneView
 
 from .views import (UserProfilePage, MainPage, RegisterUserPage,
@@ -9,8 +9,9 @@ from .views import (UserProfilePage, MainPage, RegisterUserPage,
 
 from .forms import CustomPasswordResetForm
 
-app_name = 'main'
+from .api.routes import router
 
+app_name = 'main'
 
 urlpatterns = [
     path('', MainPage.as_view(), name='main_page'),
@@ -50,5 +51,7 @@ urlpatterns = [
     path('posts/<slug:post_uuid>/', PostPage.as_view(), name='post_page'),
     path('posts/<slug:post_uuid>/delete/', DeletePostPage.as_view(), name='delete_post_page'),
     path('posts/<slug:post_uuid>/edit/', EditPostPage.as_view(), name='edit_post_page'),
-    path('posts/<slug:post_uuid>/create_comment/', CreateComment.as_view(), name='create_comment')
+    path('posts/<slug:post_uuid>/create_comment/', CreateComment.as_view(), name='create_comment'),
+
+    path('accounts/api/', include(router.urls))
 ]

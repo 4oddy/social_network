@@ -1,3 +1,4 @@
+import datetime
 from pathlib import Path
 
 import dotenv
@@ -41,8 +42,24 @@ INSTALLED_APPS = [
     'captcha',
     'django_cleanup.apps.CleanupConfig',
     'channels',
-    'django_user_agents'
+    'django_user_agents',
+    'rest_framework',
+    'rest_framework_simplejwt',
+    'corsheaders'
 ]
+
+# REST Framework settings
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication'
+    ]
+}
+
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': datetime.timedelta(days=1)
+}
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
@@ -55,12 +72,16 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
+    'corsheaders.middleware.CorsMiddleware',
     'django_user_agents.middleware.UserAgentMiddleware',
 
     # project middlewares
     'core.middleware.request_exposer.RequestExposerMiddleware',
     'core.middleware.device_exposer.DeviceExposerMiddleware',
 ]
+
+# CORS settings
+CORS_ALLOW_ALL_ORIGINS = True
 
 ROOT_URLCONF = 'first_site.urls'
 
