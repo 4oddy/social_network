@@ -9,7 +9,7 @@ from .views import (UserProfilePage, MainPage, RegisterUserPage,
 
 from .forms import CustomPasswordResetForm
 
-from .api.routes import router
+from .api import routers
 
 app_name = 'main'
 
@@ -53,5 +53,6 @@ urlpatterns = [
     path('posts/<slug:post_uuid>/edit/', EditPostPage.as_view(), name='edit_post_page'),
     path('posts/<slug:post_uuid>/create_comment/', CreateComment.as_view(), name='create_comment'),
 
-    path('accounts/api/', include(router.urls))
+    path('accounts/api/', include(routers.accounts_router.urls)),
+    path('actions/api/', include(routers.friend_requests_router.urls))
 ]

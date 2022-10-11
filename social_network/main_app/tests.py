@@ -63,7 +63,7 @@ class TestUser(TestCase):
                 self.assertFalse(find_friend_request(first_user=self.user, second_user=user))
                 self.assertFalse(in_friendship(self.user, user))
 
-    def test_custom_friend_request_first(self):
+    def test_custom_friend_request(self):
         for user in self.users_queryset:
             if user != self.user:
                 request = create_friend_request(from_user=self.user, to_user_id=user.pk)
@@ -78,60 +78,10 @@ class TestUser(TestCase):
                 self.assertFalse(find_friend_request(first_user=self.user, second_user_id=user.pk))
                 self.assertFalse(in_friendship(self.user, user))
 
-    def test_custom_friend_request_second(self):
-        for user in self.users_queryset:
-            if user != self.user:
-                request = create_friend_request(from_user=self.user, to_user=user)
-                self.assertEqual(request.request_status, 'c')
-
-                request.accept()
-                self.assertEqual(request.request_status, 'a')
-
-                self.assertTrue(in_friendship(self.user, user))
-
-                delete_from_friendship(self.user, user)
-                self.assertFalse(find_friend_request(first_user=self.user, second_user=user))
-                self.assertFalse(in_friendship(self.user, user))
-
-    def test_custom_friend_request_third(self):
-        for user in self.users_queryset:
-            if user != self.user:
-                request = create_friend_request(from_user_id=self.user.pk, to_user=user)
-                self.assertEqual(request.request_status, 'c')
-
-                request.accept()
-                self.assertEqual(request.request_status, 'a')
-
-                self.assertTrue(in_friendship(self.user, user))
-
-                delete_from_friendship(self.user, user)
-                self.assertFalse(find_friend_request(first_user_id=self.user.pk, second_user=user))
-                self.assertFalse(in_friendship(self.user, user))
-
-    def test_custom_friend_request_fourth(self):
-        for user in self.users_queryset:
-            if user != self.user:
-                request = create_friend_request(from_user_id=self.user.pk, to_user_id=user.pk)
-                self.assertEqual(request.request_status, 'c')
-
-                request.accept()
-                self.assertEqual(request.request_status, 'a')
-
-                self.assertTrue(in_friendship(self.user, user))
-
-                delete_from_friendship(self.user, user)
-                self.assertFalse(find_friend_request(first_user_id=self.user.pk, second_user_id=user.pk))
-                self.assertFalse(in_friendship(self.user, user))
-
     def test_negative_friend_request(self):
-        user = self.users_queryset.first()
+        request = create_friend_request(from_user=self.user, to_user_id=self.user.pk)
 
-        list_of_requests = [create_friend_request(from_user=user, to_user=user),
-                            create_friend_request(from_user=user, to_user_id=user.pk),
-                            create_friend_request(from_user_id=user.pk, to_user=user),
-                            create_friend_request(from_user_id=user.pk, to_user_id=user.pk)]
-
-        self.assertFalse(any(list_of_requests))
+        self.assertIsNone(request)
 
 
 class TestPost(TestCase):

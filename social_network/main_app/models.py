@@ -84,9 +84,9 @@ class FriendRequest(models.Model):
         ACCEPTED = 'a', 'ACCEPTED'
         DENIED = 'd', 'DENIED'
 
-    from_user = models.ForeignKey(CustomUser, verbose_name='От кого',
+    from_user = models.ForeignKey(CustomUser, null=False, verbose_name='От кого',
                                   related_name='from_user_request', on_delete=models.CASCADE)
-    to_user = models.ForeignKey(CustomUser, verbose_name='Кому',
+    to_user = models.ForeignKey(CustomUser, null=False, verbose_name='Кому',
                                 related_name='to_user_request', on_delete=models.CASCADE)
     request_status = models.CharField(verbose_name='Статус заявки', max_length=1, choices=RequestStatuses.choices,
                                       default=RequestStatuses.CREATED)

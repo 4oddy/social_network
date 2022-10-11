@@ -190,10 +190,12 @@ class CreateFriendRequest(LoginRequiredMixin, View):
 class CancelFriendRequest(LoginRequiredMixin, View):
     def post(self, *args, **kwargs):
         data = get_data_for_action(self.request)
-        req = FriendRequest.objects.filter(from_user_id=data['from_user_id'], to_user_id=data['to_user_id']).first()
 
-        if req:
-            req.delete()
+        if data['to_user_id']:
+            req = FriendRequest.objects.filter(from_user_id=data['from_user_id'], to_user_id=data['to_user_id']).first()
+
+            if req:
+                req.delete()
 
         return redirect(data['user_path'])
 
@@ -201,10 +203,12 @@ class CancelFriendRequest(LoginRequiredMixin, View):
 class AcceptFriendRequest(LoginRequiredMixin, View):
     def post(self, *args, **kwargs):
         data = get_data_for_action(self.request)
-        req = FriendRequest.objects.filter(from_user_id=data['to_user_id'], to_user=data['from_user']).first()
 
-        if req:
-            req.accept()
+        if data['to_user_id']:
+            req = FriendRequest.objects.filter(from_user_id=data['to_user_id'], to_user=data['from_user']).first()
+
+            if req:
+                req.accept()
 
         return redirect(data['user_path'])
 
@@ -212,10 +216,12 @@ class AcceptFriendRequest(LoginRequiredMixin, View):
 class DenyFriendRequest(LoginRequiredMixin, View):
     def post(self, *args, **kwargs):
         data = get_data_for_action(self.request)
-        req = FriendRequest.objects.filter(from_user_id=data['to_user_id'], to_user_id=data['from_user_id']).first()
 
-        if req:
-            req.deny()
+        if data['to_user_id']:
+            req = FriendRequest.objects.filter(from_user_id=data['to_user_id'], to_user_id=data['from_user_id']).first()
+
+            if req:
+                req.deny()
 
         return redirect(data['user_path'])
 
@@ -223,9 +229,11 @@ class DenyFriendRequest(LoginRequiredMixin, View):
 class DeleteFriend(LoginRequiredMixin, View):
     def post(self, *args, **kwargs):
         data = get_data_for_action(self.request)
-        user = get_object_or_404(User, pk=data['to_user_id'])
 
-        delete_from_friendship(data['from_user'], user)
+        if data['to_user_id']:
+            user = get_object_or_404(User, pk=data['to_user_id'])
+
+            delete_from_friendship(data['from_user'], user)
 
         return redirect(data['user_path'])
 
