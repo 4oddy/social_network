@@ -9,7 +9,7 @@ from . import serializers
 from . import permissions as custom_permissions
 
 from main_app.models import FriendRequest
-from main_app.services import delete_from_friendship
+from main_app.services import delete_from_friendship, send_email_changed_settings
 
 User = get_user_model()
 
@@ -35,9 +35,14 @@ class UserUpdateView(viewsets.GenericViewSet, mixins.UpdateModelMixin):
     permission_classes = [
         permissions.IsAuthenticated
     ]
+    queryset = User.objects.all()
 
     def get_object(self):
         return self.request.user
+
+    def update(self, request, *args, **kwargs):
+        send_email_changed_settings(request.user)
+        return super().update(request, *args, **kwargs)
 
 
 class UserFriendsView(viewsets.GenericViewSet, mixins.ListModelMixin):
