@@ -97,17 +97,18 @@ class FriendRequest(models.Model):
         verbose_name_plural = 'Заявки в друзья'
 
     def accept(self):
-        if self.request_status != 'a':
+        if self.request_status != self.RequestStatuses.ACCEPTED:
             first_user, second_user = self.from_user, self.to_user
 
             CustomUser.make_friends(first_user, second_user)
 
-            self.request_status = 'a'
+            self.request_status = self.RequestStatuses.ACCEPTED
             self.save()
 
     def deny(self):
-        self.request_status = 'd' if self.request_status != 'd' else self.request_status
-        self.save()
+        if self.request_status != self.RequestStatuses.DENIED and self.request_status != self.RequestStatuses.ACCEPTED:
+            self.request_status = self.RequestStatuses.DENIED
+            self.save()
 
     def save(
         self, force_insert=False, force_update=False, using=None, update_fields=None
