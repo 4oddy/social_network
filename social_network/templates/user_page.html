@@ -53,8 +53,8 @@
                                 Зарегистрировался {{ profile.date_joined }}
                                 <br>
             <br>
-                                {% if friend_amount > 0 %}
-                                <a href="{% url 'main:friends_page' profile.username %}" style="color: #0B66E3; text-decoration: none;"> Друзья: {{ friend_amount }} </a>
+                                {% if friends_amount > 0 %}
+                                <a href="{% url 'main:friends_page' profile.username %}" style="color: #0B66E3; text-decoration: none;"> Друзья: {{ friends_amount }} </a>
                                 {% else %}
                                 Нет друзей
                                 {% endif %}

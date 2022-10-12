@@ -40,6 +40,34 @@ def find_friend_request(first_user: User | None = None, second_user: User | None
     return request
 
 
+def get_request_info(first_user: User, second_user: User) -> dict:
+    info = dict()
+
+    request = FriendRequest.objects.filter(from_user=first_user, to_user=second_user).first()
+
+    if request and request.request_status in (request.RequestStatuses.CREATED, request.RequestStatuses.DENIED):
+        info['already_requested'] = True
+        info['request_status'] = request.request_status
+    else:
+        request = FriendRequest.objects.filter(from_user=second_user, to_user=first_user).first()
+
+        if request and request.request_status != request.RequestStatuses.ACCEPTED:
+            info['requested_to_you'] = True
+
+    return info
+
+
+def get_user_for_view(from_user: User, to_user_username: str) -> User:
+    own_profile = from_user.username == to_user_username
+
+    if own_profile:
+        user = from_user
+    else:
+        user = get_object_or_404(User.objects.prefetch_related('friends'), username=to_user_username)
+
+    return user
+
+
 # func to get data from hidden form's fields
 def get_data_for_action(request: HttpRequest) -> dict:
     user_path = request.POST['current_path']

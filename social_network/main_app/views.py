@@ -16,7 +16,8 @@ from .forms import (CustomUserCreationForm, FindUserForm, CustomAuthenticationFo
 
 from .services import (find_users, get_data_for_action,
                        get_username_from_kwargs, create_friend_request,
-                       send_email_changed_settings, delete_from_friendship)
+                       send_email_changed_settings, delete_from_friendship,
+                       in_friendship, get_request_info, get_user_for_view)
 
 User = get_user_model()
 
@@ -26,7 +27,7 @@ class MainPage(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['posts'] = Post.objects.select_related('owner').filter(owner__friends=self.request.user)[::-1]
+        context['posts'] = Post.objects.select_related('owner').friends_posts(self.request.user)
         return context
 
 
@@ -39,59 +40,25 @@ class UserProfilePage(LoginRequiredMixin, TemplateView):
         from_user = self.request.user
         to_user_username = get_username_from_kwargs(self.kwargs)
 
-        # if it is profile of request's user
         own_profile = context['own_profile'] = from_user.username == to_user_username
 
-        context['posts'] = None
-
-        if own_profile:
-            user = from_user
-            context['profile'] = user
-
-        else:
-            user = get_object_or_404(User.objects.prefetch_related('friends'), username=to_user_username)
-            context['profile'] = user
-
+        user = get_user_for_view(from_user=from_user, to_user_username=to_user_username)
         friends = user.friends.all()
 
-        if friends is None:
-            context['friend_amount'] = 0
-        else:
-            context['friend_amount'] = len(friends)
-            context['friends'] = friends
+        context['profile'] = user
+        context['friends'], context['friends_amount'] = friends, len(friends)
 
         if not own_profile:
-            context['in_friendship'] = False
-            context['already_requested'] = False
-            context['requested_to_you'] = False
+            already_friends = context['in_friendship'] = in_friendship(from_user, user)
 
-            # checking for friend request from request user
-            req = FriendRequest.objects.filter(from_user=from_user, to_user=user).first()
-            req_status = req.request_status if req else None
+            if not already_friends:
+                request_info = get_request_info(from_user, user)
+                context = context | request_info
 
-            if req and req_status == 'c' or req_status == 'd':
-                context['already_requested'] = True
-                context['request_status'] = req_status
+        posts = Post.objects.select_related('owner').get_posts(user)
 
-            else:
-                # checking for friend request from page being viewed
-                req = FriendRequest.objects.filter(from_user=user, to_user=from_user).first()
-                req_status = req.request_status if req else None
-
-                if req and req_status != 'a':
-                    context['requested_to_you'] = True
-
-                # if in friendship
-                elif friends and from_user in friends:
-                    context['in_friendship'] = True
-
-        posts = Post.objects.select_related('owner').filter(owner=user)
-
-        if posts.exists():
-            context['posts'] = posts[::-1]
-            context['allowed_to_edit'] = True if own_profile else False
-            context['comments'] = Comment.objects.select_related('owner', 'post').filter(post__owner=user)
-            context['comments_amount'] = 0
+        context['posts'] = posts
+        context['allowed_to_edit'] = True if own_profile else False
 
         return context
 
@@ -104,10 +71,7 @@ class FriendsListPage(LoginRequiredMixin, TemplateView):
 
         username = get_username_from_kwargs(self.kwargs)
 
-        if self.request.user.username != username:
-            user = get_object_or_404(User.objects.prefetch_related('friends'), username=username)
-        else:
-            user = self.request.user
+        user = get_user_for_view(from_user=self.request.user, to_user_username=username)
 
         context['profile'] = user
         context['friends'] = user.friends.all()
@@ -162,14 +126,10 @@ class FindUserPage(LoginRequiredMixin, View):
         if form.is_valid():
             username = form.cleaned_data['username'].lower()
 
-            context['user_exists'] = False
-            context['more_than_one'] = False
-
             users_queryset = find_users(username)
 
             if len(users_queryset) > 0:
                 context['user_exists'] = True
-
                 if len(users_queryset) > 1:
                     context['more_than_one'] = True
 
@@ -259,8 +219,6 @@ class PostPage(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
-        context['allowed_to_edit'] = False
 
         if self.request.user == self.get_object().owner:
             context['allowed_to_edit'] = True

@@ -8,7 +8,7 @@ User = get_user_model()
 
 
 class CustomBackend(BaseBackend):
-    """ Custom Authentication logic to sign in by email and username (one of two) """
+    """ Custom Authentication logic to sign in by email or username """
     def get_user(self, user_id):
         try:
             user = User.objects.get(pk=user_id)

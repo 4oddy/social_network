@@ -1,8 +1,3 @@
-from django.contrib.auth import get_user_model
-
-User = get_user_model()
-
-
 class DeviceExposerMiddleware:
     def __init__(self, get_response):
         self._get_response = get_response
@@ -10,9 +5,9 @@ class DeviceExposerMiddleware:
     def __call__(self, request):
         if request.user.is_authenticated:
             if self._is_mobile(request):
-                request.user.device = User.Devices.MOBILE
+                request.user.device = request.user.Devices.MOBILE
             else:
-                request.user.device = User.Devices.PC
+                request.user.device = request.user.Devices.PC
 
             request.user.save()
 

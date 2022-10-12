@@ -41,7 +41,7 @@ class GetterConservations(AbstractGetter):
 
     @staticmethod
     def get_user_conservations(user: User) -> QuerySet:
-        return Conservation.objects.filter(Q(members=user) | Q(owner=user))
+        return Conservation.objects.filter(Q(members=user))
 
 
 class GetterDialogs(AbstractGetter):
@@ -53,36 +53,24 @@ class GetterDialogs(AbstractGetter):
             if companion.username == user.username:
                 raise SelfDialogCreated('Пользователь не может начать диалог с самим собой')
 
-            dialog: Dialog = Dialog.objects.select_related('owner', 'second_user').filter(
-                Q(owner=user) &
-                Q(name=companion.username) &
-                Q(second_user=companion) |
-                Q(owner=companion) & Q(name=user.username) &
-                Q(second_user=user)).first()
+            dialog = Dialog.objects.select_related('owner', 'second_user').filter(
+                Q(owner=user) & Q(name=companion.username) & Q(second_user=companion) |
+                Q(owner=companion) & Q(name=user.username) & Q(second_user=user)).first()
 
             if dialog is None:
-                dialog = Dialog.objects.create(name=companion.username,
-                                               owner=user,
-                                               second_user=companion)
+                dialog = Dialog.objects.create(name=companion.username, owner=user, second_user=companion)
 
         elif companion_username:
             if companion_username == user.username:
                 raise SelfDialogCreated('Пользователь не может начать диалог с самим собой')
 
-            dialog: Dialog = Dialog.objects.select_related('owner', 'second_user').filter(
-                Q(owner=user) &
-                Q(name=companion_username) &
-                Q(second_user__username=companion_username) |
-                Q(owner__username=companion_username) &
-                Q(name=user.username) &
-                Q(second_user=user)).first()
+            dialog = Dialog.objects.select_related('owner', 'second_user').filter(
+                Q(owner=user) & Q(name=companion_username) & Q(second_user__username=companion_username) |
+                Q(owner__username=companion_username) & Q(name=user.username) & Q(second_user=user)).first()
 
             if dialog is None:
                 second_user = get_object_or_404(User, username=companion_username)
-                dialog = Dialog.objects.create(name=companion_username,
-                                               owner=user,
-                                               second_user=second_user)
-
+                dialog = Dialog.objects.create(name=companion_username, owner=user, second_user=second_user)
         else:
             raise TypeError('You have to define companion or companion_username')
 

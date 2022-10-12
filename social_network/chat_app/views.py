@@ -8,6 +8,9 @@ from .models import ConservationMessage, Conservation, DialogMessage, Dialog
 from .services import GetterDialogs, GetterConservations
 from .forms import CreateConservationForm
 
+from main_app.services import in_friendship
+
+
 User = get_user_model()
 
 getter_dialogs = GetterDialogs()
@@ -21,18 +24,18 @@ class ConservationPage(LoginRequiredMixin, TemplateView):
 
         group_name = self.kwargs['group_name']
 
+        conservation = get_object_or_404(Conservation, name=group_name)
+
         context['group_type'] = 'conservation'
         context['group_name'] = group_name
-        context['conservation'] = get_object_or_404(Conservation, name=group_name)
-        context['messages'] = ConservationMessage.objects.select_related('sender').filter(
-            group__name=group_name)
+        context['conservation'] = conservation
+        context['messages'] = ConservationMessage.objects.select_related('sender').filter(group=conservation)
 
         return context
 
     def render_to_response(self, context, **response_kwargs):
         if self.request.user not in context['conservation'].members.all():
-            if self.request.user != context['conservation'].owner:
-                return HttpResponseForbidden()
+            return HttpResponseForbidden('Пользователь не состоит в беседе')
         return super().render_to_response(context, **response_kwargs)
 
 
@@ -42,23 +45,20 @@ class DialogPage(LoginRequiredMixin, View):
 
         companion_name = self.kwargs['companion_name']
 
+        if self.request.user.username == companion_name:
+            return HttpResponseBadRequest('Пользователь не может начать диалог сам с собой')
+
         context['group_type'] = 'dialog'
         context['group_name'] = companion_name
 
-        if self.request.user.username == companion_name:
-            return HttpResponseBadRequest()
-
         second_user = get_object_or_404(User, username=companion_name)
 
-        if second_user in self.request.user.friends.all() and self.request.user in second_user.friends.all():
-            dialog: Dialog = getter_dialogs.get_group_sync(user=self.request.user, companion=second_user)
+        if in_friendship(self.request.user, second_user):
+            dialog = getter_dialogs.get_group_sync(user=self.request.user, companion=second_user)
 
             context['dialog'] = dialog
             context['companion'] = dialog.get_companion(user=self.request.user)
-
-            context['messages'] = DialogMessage.objects.select_related('sender'). \
-                filter(group__owner=dialog.owner,
-                       group__second_user=dialog.second_user)
+            context['messages'] = DialogMessage.objects.select_related('sender').filter(group=dialog)
 
             return render(self.request, 'chat_page.html', context=context)
 
@@ -74,7 +74,7 @@ class UserGroupsPage(LoginRequiredMixin, TemplateView):
         user = self.request.user
 
         user_conservations = GetterConservations.get_user_conservations(user)
-        user_dialogs = getter_dialogs.get_user_dialogs(user)
+        user_dialogs = GetterDialogs.get_user_dialogs(user)
 
         context['conservations'] = user_conservations
         context['dialogs'] = user_dialogs
@@ -95,7 +95,10 @@ class CreateConservationPage(LoginRequiredMixin, CreateView):
         obj = form.save(commit=False)
         obj.owner = self.request.user
         obj.save()
+
         form.save_m2m()
+
+        obj.members.add(self.request.user)
         return redirect(self.get_success_url())
 
     def get_success_url(self):

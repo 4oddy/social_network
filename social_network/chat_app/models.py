@@ -88,7 +88,7 @@ class ConservationMessage(AbstractMessage):
     ):
         if self.sender not in self.group.members.all():
             raise exceptions.UserNotInConservation('Отправитель не находится в этой беседе')
-        return super().save()
+        return super().save(force_insert, force_update, using, update_fields)
 
 
 class DialogMessage(AbstractMessage):
@@ -104,4 +104,4 @@ class DialogMessage(AbstractMessage):
     ):
         if self.sender != self.group.owner and self.sender != self.group.second_user:
             raise exceptions.UserNotInDialog('Отправитель не находится в этом диалоге')
-        return super().save()
+        return super().save(force_insert, force_update, using, update_fields)

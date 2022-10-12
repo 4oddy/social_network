@@ -10,6 +10,7 @@ from django.shortcuts import reverse
 
 from .validators import custom_username_validator
 from .exceptions import SelfRequestedException
+from .managers import PostManager
 
 import uuid
 
@@ -43,6 +44,13 @@ class CustomUser(AbstractUser):
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
 
+    def clean(self):
+        if len(self.first_name) > 50:
+            raise ValidationError({'first_name': 'Максимальная длина: 50'})
+
+        if len(self.last_name) > 50:
+            raise ValidationError({'last_name': 'Максимальная длина: 50'})
+
     def get_absolute_url(self):
         return reverse('main:user_page', kwargs={'username': self.username})
 
@@ -57,13 +65,6 @@ class CustomUser(AbstractUser):
         if self.device == self.Devices.MOBILE:
             return True
         return False
-
-    def clean(self):
-        if len(self.first_name) > 50:
-            raise ValidationError({'first_name': 'Максимальная длина: 50'})
-
-        if len(self.last_name) > 50:
-            raise ValidationError({'last_name': 'Максимальная длина: 50'})
 
     @staticmethod
     def make_friends(first_user, second_user):
@@ -115,7 +116,7 @@ class FriendRequest(models.Model):
     ):
         if self.from_user == self.to_user:
             raise SelfRequestedException('Пользователь не может отправить заявку в друзья самому себе')
-        return super(FriendRequest, self).save()
+        return super(FriendRequest, self).save(force_insert, force_update, using, update_fields)
 
 
 class Post(models.Model):
@@ -126,6 +127,8 @@ class Post(models.Model):
     post_uuid = models.UUIDField(unique=True, editable=False, default=uuid.uuid4)
     date_of_creating = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
     date_of_update = models.DateTimeField(auto_now=True, verbose_name='Дата обновления')
+
+    objects = PostManager()
 
     class Meta:
         verbose_name = 'Запись'
