@@ -63,12 +63,11 @@ class FriendRequestView(viewsets.GenericViewSet, mixins.CreateModelMixin, mixins
         return queryset
 
     def create(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data)
+        serializer = self.serializer_class(data=request.data, context={'request': request})
 
         if serializer.is_valid():
-            if serializer.validated_data.get('from_user', request.user) == request.user:
-                if serializer.create(validated_data=serializer.validated_data) is not None:
-                    return Response(serializer.data, status=status.HTTP_201_CREATED)
+            if serializer.create(validated_data=serializer.validated_data) is not None:
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -90,7 +89,7 @@ class FriendRequestView(viewsets.GenericViewSet, mixins.CreateModelMixin, mixins
 
 
 class AcceptFriendRequestView(viewsets.GenericViewSet, mixins.CreateModelMixin):
-    serializer_class = serializers.FriendRequestSerializer
+    serializer_class = serializers.AcceptOrDenyFriendRequestSerializer
     permission_classes = [
         permissions.IsAuthenticated
     ]
@@ -100,18 +99,17 @@ class AcceptFriendRequestView(viewsets.GenericViewSet, mixins.CreateModelMixin):
 
         if serializer.is_valid():
             from_user = serializer.validated_data.get('from_user')
-            to_user = serializer.validated_data.get('to_user', request.user)
+            to_user = request.user
 
-            if to_user == request.user:
-                request = get_object_or_404(FriendRequest, from_user=from_user, to_user=to_user)
-                request.accept()
-                return Response(data=serializer.data, status=status.HTTP_200_OK)
+            request = get_object_or_404(FriendRequest, from_user=from_user, to_user=to_user)
+            request.accept()
+            return Response(data=serializer.data, status=status.HTTP_200_OK)
 
         return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class DenyFriendRequestView(viewsets.GenericViewSet, mixins.CreateModelMixin):
-    serializer_class = serializers.FriendRequestSerializer
+    serializer_class = serializers.AcceptOrDenyFriendRequestSerializer
     permission_classes = [
         permissions.IsAuthenticated
     ]
@@ -121,11 +119,10 @@ class DenyFriendRequestView(viewsets.GenericViewSet, mixins.CreateModelMixin):
 
         if serializer.is_valid():
             from_user = serializer.validated_data.get('from_user')
-            to_user = serializer.validated_data.get('to_user', request.user)
+            to_user = request.user
 
-            if to_user == request.user:
-                request = get_object_or_404(FriendRequest, from_user=from_user, to_user=to_user)
-                request.deny()
-                return Response(data=serializer.data, status=status.HTTP_200_OK)
+            request = get_object_or_404(FriendRequest, from_user=from_user, to_user=to_user)
+            request.deny()
+            return Response(data=serializer.data, status=status.HTTP_200_OK)
 
         return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -60,10 +60,8 @@ def create_friend_request(from_user: User, to_user_id: User) -> FriendRequest:
 
     if from_user.id != int(to_user_id):
         if User.objects.filter(id=to_user_id).exists():
-            print('exists')
             if find_friend_request(first_user=from_user, second_user_id=to_user_id) is None:
                 request = FriendRequest.objects.create(from_user=from_user, to_user_id=to_user_id)
-                print('created')
 
     if settings.SEND_EMAILS and request is not None:
         to_user = get_object_or_404(User, pk=to_user_id)

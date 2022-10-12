@@ -30,8 +30,15 @@ class FriendRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = FriendRequest
         fields = '__all__'
-        extra_kwargs = {'request_status': {'read_only': True}}
+        extra_kwargs = {'request_status': {'read_only': True}, 'from_user': {'read_only': True}}
 
     def create(self, validated_data):
-        request = create_friend_request(from_user=validated_data['from_user'], to_user_id=validated_data['to_user'].id)
+        request = create_friend_request(from_user=self.context['request'].user, to_user_id=validated_data['to_user'].id)
         return request
+
+
+class AcceptOrDenyFriendRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FriendRequest
+        fields = '__all__'
+        extra_kwargs = {'request_status': {'read_only': True}, 'to_user': {'read_only': True}}

@@ -6,6 +6,8 @@ from django.http import HttpRequest
 
 import uuid
 
+from . import exceptions
+
 User = get_user_model()
 
 exposed_request: HttpRequest = HttpRequest()
@@ -81,6 +83,13 @@ class ConservationMessage(AbstractMessage):
         verbose_name = 'Сообщение беседы'
         verbose_name_plural = 'Сообщения беседы'
 
+    def save(
+        self, force_insert=False, force_update=False, using=None, update_fields=None
+    ):
+        if self.sender not in self.group.members.all():
+            raise exceptions.UserNotInConservation('Отправитель не находится в этой беседе')
+        return super().save()
+
 
 class DialogMessage(AbstractMessage):
     group = models.ForeignKey(Dialog, verbose_name='Диалог', on_delete=models.CASCADE,
@@ -89,3 +98,10 @@ class DialogMessage(AbstractMessage):
     class Meta:
         verbose_name = 'Сообщение диалога'
         verbose_name_plural = 'Сообщения диалога'
+
+    def save(
+        self, force_insert=False, force_update=False, using=None, update_fields=None
+    ):
+        if self.sender != self.group.owner and self.sender != self.group.second_user:
+            raise exceptions.UserNotInDialog('Отправитель не находится в этом диалоге')
+        return super().save()
