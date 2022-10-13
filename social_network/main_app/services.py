@@ -5,8 +5,10 @@ from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 
 from .models import FriendRequest
-from core.utils import get_current_date
 from .tasks import send_email
+
+from core.utils import get_current_date
+
 
 User = get_user_model()
 
@@ -81,7 +83,7 @@ def get_username_from_kwargs(kwargs: dict) -> str:
     return kwargs['username'].replace('@', '')
 
 
-def send_friend_request_email(from_user, to_user) -> None:
+def send_friend_request_email(from_user: User, to_user: User) -> None:
     if settings.SEND_EMAILS:
         email_body = settings.DEFAULT_EMAIL_FRIEND_REQUEST_BODY.format(name=to_user.get_name(),
                                                                        name_requested=from_user.username,
