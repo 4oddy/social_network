@@ -71,37 +71,35 @@ def get_user_for_view(from_user: User, to_user_username: str) -> User:
 # func to get data from hidden form's fields
 def get_data_for_action(request: HttpRequest) -> dict:
     user_path = request.POST['current_path']
-    from_user_id = request.user.pk
     from_user = request.user
     to_user_id = request.POST['user_id']
 
-    return {'user_path': user_path, 'from_user_id': from_user_id, 'from_user': from_user,
-            'to_user_id': to_user_id}
+    return {'user_path': user_path, 'from_user': from_user, 'to_user_id': to_user_id}
 
 
 def get_username_from_kwargs(kwargs: dict) -> str:
     return kwargs['username'].replace('@', '')
 
 
+def send_friend_request_email(from_user, to_user) -> None:
+    if settings.SEND_EMAILS:
+        email_body = settings.DEFAULT_EMAIL_FRIEND_REQUEST_BODY.format(name=to_user.get_name(),
+                                                                       name_requested=from_user.username,
+                                                                       date=get_current_date())
+
+        send_email.delay(subject=settings.DEFAULT_EMAIL_FRIEND_REQUEST_SUBJECT, body=email_body, to=[to_user.email])
+
+
 def create_friend_request(from_user: User, to_user_id: User) -> FriendRequest:
     request = None
 
     if from_user.id != int(to_user_id):
-        if User.objects.filter(id=to_user_id).exists():
-            if find_friend_request(first_user=from_user, second_user_id=to_user_id) is None:
-                request = FriendRequest.objects.create(from_user=from_user, to_user_id=to_user_id)
+        if find_friend_request(first_user=from_user, second_user_id=to_user_id) is None:
+            request = FriendRequest.objects.create(from_user=from_user, to_user_id=to_user_id)
 
-    if settings.SEND_EMAILS and request is not None:
+    if request is not None:
         to_user = get_object_or_404(User, pk=to_user_id)
-
-        name = to_user.first_name if to_user.first_name else to_user.username
-
-        username = from_user.username
-
-        email_body = settings.DEFAULT_EMAIL_FRIEND_REQUEST_BODY.format(name=name, name_requested=username,
-                                                                       date=get_current_date())
-
-        send_email.delay(subject=settings.DEFAULT_EMAIL_FRIEND_REQUEST_SUBJECT, body=email_body, to=[to_user.email])
+        send_friend_request_email(from_user=from_user, to_user=to_user)
 
     return request
 

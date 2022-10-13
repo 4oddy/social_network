@@ -2,11 +2,14 @@ from django.db import models
 
 
 class PostQuerySet(models.QuerySet):
+    def reversed_filter(self, *args, **kwargs):
+        return reversed(self.filter(*args, **kwargs))
+
     def friends_posts(self, user):
-        return self.filter(owner__friends=user)[::-1]
+        return self.reversed_filter(owner__friends=user)
 
     def get_posts(self, user):
-        return self.filter(owner=user)[::-1]
+        return self.reversed_filter(owner=user)
 
 
 class PostManager(models.Manager):

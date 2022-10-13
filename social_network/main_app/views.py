@@ -12,7 +12,8 @@ from django.http import HttpResponseForbidden, HttpResponse, HttpResponseBadRequ
 from .models import FriendRequest, Post, Comment
 
 from .forms import (CustomUserCreationForm, FindUserForm, CustomAuthenticationForm,
-                    UserSettingsForm, PostCreatingForm, PostEditingForm, CommentForm)
+                    UserSettingsForm, PostCreatingForm, PostEditingForm, CommentForm,
+                    FriendRequestForm)
 
 from .services import (find_users, get_data_for_action,
                        get_username_from_kwargs, create_friend_request,
@@ -142,7 +143,10 @@ class CreateFriendRequest(LoginRequiredMixin, View):
     def post(self, *args, **kwargs):
         data = get_data_for_action(self.request)
 
-        create_friend_request(from_user=data['from_user'], to_user_id=data['to_user_id'])
+        form = FriendRequestForm(data={'from_user': data['from_user'], 'to_user': data['to_user_id']})
+
+        if form.is_valid():
+            form.save()
 
         return redirect(data['user_path'])
 
@@ -152,7 +156,7 @@ class CancelFriendRequest(LoginRequiredMixin, View):
         data = get_data_for_action(self.request)
 
         if data['to_user_id']:
-            req = FriendRequest.objects.filter(from_user_id=data['from_user_id'], to_user_id=data['to_user_id']).first()
+            req = FriendRequest.objects.filter(from_user=data['from_user'], to_user_id=data['to_user_id']).first()
 
             if req:
                 req.delete()
@@ -178,7 +182,7 @@ class DenyFriendRequest(LoginRequiredMixin, View):
         data = get_data_for_action(self.request)
 
         if data['to_user_id']:
-            req = FriendRequest.objects.filter(from_user_id=data['to_user_id'], to_user_id=data['from_user_id']).first()
+            req = FriendRequest.objects.filter(from_user_id=data['to_user_id'], to_user=data['from_user']).first()
 
             if req:
                 req.deny()

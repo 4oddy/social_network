@@ -1,14 +1,27 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, UsernameField, PasswordResetForm
 
-from .models import CustomUser, Post, Comment
+from .models import CustomUser, Post, Comment, FriendRequest
+from .services import create_friend_request
 from .validators import custom_username_validator
 from .tasks import send_password_reset_email
+
 from core.forms import BaseForm
 
 
 class FindUserForm(forms.Form):
     username = forms.CharField(label='Имя пользователя', max_length=150)
+
+
+class FriendRequestForm(forms.ModelForm):
+    class Meta:
+        model = FriendRequest
+        fields = ('from_user', 'to_user')
+
+    def save(self, commit=True):
+        req = create_friend_request(from_user=self.cleaned_data['from_user'],
+                                    to_user_id=self.cleaned_data['to_user'].id)
+        return req
 
 
 class CustomUserCreationForm(UserCreationForm, BaseForm):

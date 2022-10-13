@@ -9,7 +9,6 @@ from django.core.validators import EmailValidator
 from django.shortcuts import reverse
 
 from .validators import custom_username_validator
-from .exceptions import SelfRequestedException
 from .managers import PostManager
 
 import uuid
@@ -54,6 +53,9 @@ class CustomUser(AbstractUser):
     def get_absolute_url(self):
         return reverse('main:user_page', kwargs={'username': self.username})
 
+    def get_name(self):
+        return self.first_name if self.first_name else self.username
+
     @property
     def is_online(self):
         if self.last_online:
@@ -97,6 +99,17 @@ class FriendRequest(models.Model):
         verbose_name = 'Заявка в друзья'
         verbose_name_plural = 'Заявки в друзья'
 
+        constraints = [
+            models.CheckConstraint(
+                check=~models.Q(from_user=models.F('to_user')),
+                name='check_self_request'
+            ),  # prohibits creating of request to yourself
+            models.UniqueConstraint(
+                fields=('from_user', 'to_user'),
+                name='unique_request'
+            )  # prohibits creating of existing request
+        ]
+
     def accept(self):
         if self.request_status != self.RequestStatuses.ACCEPTED:
             first_user, second_user = self.from_user, self.to_user
@@ -110,13 +123,6 @@ class FriendRequest(models.Model):
         if self.request_status != self.RequestStatuses.DENIED and self.request_status != self.RequestStatuses.ACCEPTED:
             self.request_status = self.RequestStatuses.DENIED
             self.save()
-
-    def save(
-        self, force_insert=False, force_update=False, using=None, update_fields=None
-    ):
-        if self.from_user == self.to_user:
-            raise SelfRequestedException('Пользователь не может отправить заявку в друзья самому себе')
-        return super(FriendRequest, self).save(force_insert, force_update, using, update_fields)
 
 
 class Post(models.Model):
