@@ -75,7 +75,7 @@ class TestUser(TestCase):
                 self.assertTrue(in_friendship(self.user, user))
 
                 delete_from_friendship(self.user, user)
-                self.assertFalse(find_friend_request(first_user=self.user, second_user_id=user.pk))
+                self.assertFalse(find_friend_request(first_user=self.user, second_user=user))
                 self.assertFalse(in_friendship(self.user, user))
 
     def test_negative_friend_request(self):
@@ -94,8 +94,10 @@ class TestPost(TestCase):
         self.user = User.objects.create_user(username=self.username, email=self.email,
                                              password=self.password)
 
+        self._create_post_url = reverse('main:create_post')
+
     def create_post(self, data):
-        response = self.client.post(reverse('main:create_post'), data=data)
+        response = self.client.post(self._create_post_url, data=data)
         return response
 
     def test_creating_positive(self):

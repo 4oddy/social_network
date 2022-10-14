@@ -22,23 +22,9 @@ def find_users(username: str) -> QuerySet:
     return queryset
 
 
-def find_friend_request(first_user: User | None = None, second_user: User | None = None,
-                        first_user_id: int | None = None, second_user_id: int | None = None) -> FriendRequest:
-    request = None
-
-    if first_user and second_user:
-        request = FriendRequest.objects.filter(Q(from_user=first_user) & Q(to_user=second_user) |
-                                               Q(from_user=second_user) & Q(to_user=first_user)).first()
-    elif first_user and second_user_id:
-        request = FriendRequest.objects.filter(Q(from_user=first_user) & Q(to_user_id=second_user_id) |
-                                               Q(from_user_id=second_user_id) & Q(to_user=first_user)).first()
-    elif first_user_id and second_user:
-        request = FriendRequest.objects.filter(Q(from_user_id=first_user_id) & Q(to_user=second_user) |
-                                               Q(from_user=second_user) & Q(to_user_id=first_user_id)).first()
-    elif first_user_id and second_user_id:
-        request = FriendRequest.objects.filter(Q(from_user_id=first_user_id) & Q(to_user_id=second_user_id) |
-                                               Q(from_user_id=second_user_id) & Q(to_user_id=first_user_id)).first()
-
+def find_friend_request(first_user: User | int, second_user: User | int) -> FriendRequest:
+    request = FriendRequest.objects.filter(Q(from_user=first_user) & Q(to_user=second_user) |
+                                           Q(from_user=second_user) & Q(to_user=first_user)).first()
     return request
 
 
@@ -48,12 +34,14 @@ def get_request_info(first_user: User, second_user: User) -> dict:
     request = FriendRequest.objects.filter(from_user=first_user, to_user=second_user).first()
 
     if request and request.request_status in (request.RequestStatuses.CREATED, request.RequestStatuses.DENIED):
+        # you have already created friend request
         info['already_requested'] = True
         info['request_status'] = request.request_status
     else:
         request = FriendRequest.objects.filter(from_user=second_user, to_user=first_user).first()
 
         if request and request.request_status != request.RequestStatuses.ACCEPTED:
+            # user requested to you
             info['requested_to_you'] = True
 
     return info
@@ -92,11 +80,11 @@ def send_friend_request_email(from_user: User, to_user: User) -> None:
         send_email.delay(subject=settings.DEFAULT_EMAIL_FRIEND_REQUEST_SUBJECT, body=email_body, to=[to_user.email])
 
 
-def create_friend_request(from_user: User, to_user_id: User) -> FriendRequest:
+def create_friend_request(from_user: User, to_user_id: int) -> FriendRequest | None:
     request = None
 
     if from_user.id != int(to_user_id):
-        if find_friend_request(first_user=from_user, second_user_id=to_user_id) is None:
+        if find_friend_request(first_user=from_user, second_user=to_user_id) is None:
             request = FriendRequest.objects.create(from_user=from_user, to_user_id=to_user_id)
 
     if request is not None:
