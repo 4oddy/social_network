@@ -4,7 +4,7 @@ from django.views.generic import TemplateView, View, CreateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import get_user_model
 
-from .models import ConservationMessage, Conservation, DialogMessage, Dialog
+from .models import ConservationMessage, Conservation, DialogMessage
 from .services import GetterDialogs, GetterConservations
 from .forms import CreateConservationForm
 
@@ -73,8 +73,8 @@ class UserGroupsPage(LoginRequiredMixin, TemplateView):
 
         user = self.request.user
 
-        user_conservations = GetterConservations.get_user_conservations(user)
-        user_dialogs = GetterDialogs.get_user_dialogs(user)
+        user_conservations = GetterConservations().get_user_groups(user)
+        user_dialogs = GetterDialogs().get_user_groups(user)
 
         context['conservations'] = user_conservations
         context['dialogs'] = user_dialogs

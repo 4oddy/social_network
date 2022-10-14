@@ -5,22 +5,26 @@ from main_app.api.serializers import UserSerializer
 from .. import models
 
 
-class DialogSerializer(serializers.ModelSerializer):
+class BaseGroupSerializer(serializers.ModelSerializer):
     owner = UserSerializer()
+
+    class BaseMeta:
+        model = models.AbstractDialog
+        fields = '__all__'
+
+
+class DialogSerializer(BaseGroupSerializer):
     second_user = UserSerializer()
 
-    class Meta:
+    class Meta(BaseGroupSerializer.BaseMeta):
         model = models.Dialog
-        fields = '__all__'
 
 
-class ConservationSerializer(serializers.ModelSerializer):
-    owner = UserSerializer()
+class ConservationSerializer(BaseGroupSerializer):
     members = UserSerializer(many=True)
 
-    class Meta:
+    class Meta(BaseGroupSerializer.BaseMeta):
         model = models.Conservation
-        fields = '__all__'
 
 
 class DialogMessageSerializer(serializers.ModelSerializer):
@@ -38,8 +42,8 @@ class ConservationMessageSerializer(serializers.ModelSerializer):
 class BaseCreatingMessageSerializer(serializers.ModelSerializer):
     class BaseMeta:
         model = models.AbstractMessage
-        fields = '__all__'
-        extra_kwargs = {'sender': {'read_only': True}}
+        exclude = ('group', )
+        read_only_fields = ('sender', )
 
     def to_representation(self, instance):
         data = super().to_representation(instance)

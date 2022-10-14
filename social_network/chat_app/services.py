@@ -21,6 +21,10 @@ class AbstractGetter(ABC):
     async def get_group(self, name: str | User, owner: User) -> AbstractDialog:
         pass
 
+    @abstractmethod
+    def get_user_groups(self, user: User) -> QuerySet[AbstractDialog]:
+        pass
+
 
 class AbstractSaver(ABC):
     @abstractmethod
@@ -39,8 +43,7 @@ class GetterConservations(AbstractGetter):
             group = get_object_or_404(Conservation, name=name)
         return group
 
-    @staticmethod
-    def get_user_conservations(user: User) -> QuerySet:
+    def get_user_groups(self, user: User) -> QuerySet:
         return Conservation.objects.filter(Q(members=user))
 
 
@@ -76,8 +79,7 @@ class GetterDialogs(AbstractGetter):
 
         return dialog
 
-    @staticmethod
-    def get_user_dialogs(user: User) -> QuerySet:
+    def get_user_groups(self, user: User) -> QuerySet:
         dialogs = Dialog.objects.filter(Q(owner=user) | Q(second_user=user))
         return dialogs
 
