@@ -9,14 +9,13 @@ from .. import services, exceptions
 
 
 class BaseGroupView(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.RetrieveModelMixin):
-    permission_classes = [
-        permissions.IsAuthenticated
-    ]
     _saver: services.AbstractSaver
     _getter: services.AbstractGetter
 
     _creating_message_serializer: serializers.BaseCreatingMessageSerializer
     _group_serializer: serializers.BaseGroupSerializer
+
+    _include_permission: custom_permissions.BasePermission
 
     def get_queryset(self):
         return self._getter.get_user_groups(self.request.user)
@@ -25,6 +24,10 @@ class BaseGroupView(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.Retri
         if self.action == 'send_message':
             return self._creating_message_serializer
         return self._group_serializer
+
+    def get_permissions(self):
+        permission_classes = [permissions.IsAuthenticated, self._include_permission]
+        return [permission() for permission in permission_classes]
 
     @action(detail=True, methods=['POST'])
     def send_message(self, request, pk=None):
@@ -52,6 +55,8 @@ class DialogView(BaseGroupView):
     _creating_message_serializer = serializers.CreateDialogMessageSerializer
     _group_serializer = serializers.DialogSerializer
 
+    _include_permission = custom_permissions.InDialog
+
 
 class ConservationView(BaseGroupView):
     _saver = services.SaverConservationMessages()
@@ -59,3 +64,5 @@ class ConservationView(BaseGroupView):
 
     _creating_message_serializer = serializers.CreateConservationMessageSerializer
     _group_serializer = serializers.ConservationSerializer
+
+    _include_permission = custom_permissions.InConservation
