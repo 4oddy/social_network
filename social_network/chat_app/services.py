@@ -43,7 +43,7 @@ class GetterConservations(AbstractGetter):
             group = get_object_or_404(Conservation, name=name)
         return group
 
-    def get_user_groups(self, user: User) -> QuerySet:
+    def get_user_groups(self, user: User) -> QuerySet[Conservation]:
         return Conservation.objects.filter(Q(members=user))
 
 
@@ -79,7 +79,7 @@ class GetterDialogs(AbstractGetter):
 
         return dialog
 
-    def get_user_groups(self, user: User) -> QuerySet:
+    def get_user_groups(self, user: User) -> QuerySet[Dialog]:
         dialogs = Dialog.objects.filter(Q(owner=user) | Q(second_user=user))
         return dialogs
 
