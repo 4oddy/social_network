@@ -69,14 +69,18 @@ class CustomUser(AbstractUser):
         return False
 
     @staticmethod
-    def make_friends(first_user, second_user):
-        if first_user not in second_user.friends.all() and second_user not in first_user.friends.all():
+    def in_friendship(first, second):
+        return first in second.friends.all() and second in first.friends.all()
+
+    @classmethod
+    def make_friends(cls, first_user, second_user):
+        if not cls.in_friendship(first_user, second_user):
             first_user.friends.add(second_user)
             second_user.friends.add(first_user)
 
-    @staticmethod
-    def delete_friends(first_user, second_user):
-        if first_user in second_user.friends.all() and second_user in first_user.friends.all():
+    @classmethod
+    def delete_friends(cls, first_user, second_user):
+        if cls.in_friendship(first_user, second_user):
             first_user.friends.remove(second_user)
             second_user.friends.remove(first_user)
 

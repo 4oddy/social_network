@@ -13,10 +13,6 @@ from core.utils import get_current_date
 User = get_user_model()
 
 
-def in_friendship(first: User, second: User) -> bool:
-    return first in second.friends.all() and second in first.friends.all()
-
-
 def find_users(username: str) -> QuerySet:
     queryset = User.objects.filter(username__icontains=username)
     return queryset

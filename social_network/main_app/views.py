@@ -1,13 +1,11 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404, reverse
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import TemplateView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
-from django.views.generic import View, DetailView
+from django.views.generic import View, DetailView, TemplateView
 from django.contrib.auth.views import LoginView
-from django.contrib.auth import get_user_model
-from django.shortcuts import get_object_or_404, reverse
 from django.http import HttpResponseForbidden, HttpResponse, HttpResponseBadRequest
+from django.contrib.auth import get_user_model
 
 from .models import FriendRequest, Post, Comment
 
@@ -16,9 +14,8 @@ from .forms import (CustomUserCreationForm, FindUserForm, CustomAuthenticationFo
                     FriendRequestForm)
 
 from .services import (find_users, get_data_for_action,
-                       get_username_from_kwargs, create_friend_request,
-                       send_email_changed_settings, delete_from_friendship,
-                       in_friendship, get_request_info, get_user_for_view)
+                       get_username_from_kwargs, send_email_changed_settings,
+                       delete_from_friendship, get_request_info, get_user_for_view)
 
 User = get_user_model()
 
@@ -50,7 +47,7 @@ class UserProfilePage(LoginRequiredMixin, TemplateView):
         context['friends'], context['friends_amount'] = friends, len(friends)
 
         if not own_profile:
-            already_friends = context['in_friendship'] = in_friendship(from_user, user)
+            already_friends = context['in_friendship'] = User.in_friendship(from_user, user)
 
             if not already_friends:
                 request_info = get_request_info(from_user, user)

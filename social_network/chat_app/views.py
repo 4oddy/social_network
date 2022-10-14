@@ -8,8 +8,6 @@ from .models import ConservationMessage, Conservation, DialogMessage
 from .services import GetterDialogs, GetterConservations
 from .forms import CreateConservationForm
 
-from main_app.services import in_friendship
-
 
 User = get_user_model()
 
@@ -53,15 +51,12 @@ class DialogPage(LoginRequiredMixin, View):
 
         second_user = get_object_or_404(User, username=companion_name)
 
-        if in_friendship(self.request.user, second_user):
+        if User.in_friendship(self.request.user, second_user):
             dialog = getter_dialogs.get_group_sync(user=self.request.user, companion=second_user)
-
             context['dialog'] = dialog
             context['companion'] = dialog.get_companion(user=self.request.user)
             context['messages'] = DialogMessage.objects.select_related('sender').filter(group=dialog)
-
             return render(self.request, 'chat_page.html', context=context)
-
         return HttpResponseForbidden('Вы не в друзьях с ' + companion_name)
 
 
