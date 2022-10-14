@@ -23,22 +23,15 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'first_name', 'last_name', 'username', 'image', 'email')
-        extra_kwargs = {'username': {'read_only': True}, 'email': {'read_only': True}}
+        read_only_fields = ('username', 'email')
 
 
 class FriendRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = FriendRequest
         fields = '__all__'
-        extra_kwargs = {'request_status': {'read_only': True}, 'from_user': {'read_only': True}}
+        read_only_fields = ('request_status', 'from_user')
 
     def create(self, validated_data):
         request = create_friend_request(from_user=self.context['request'].user, to_user_id=validated_data['to_user'].id)
         return request
-
-
-class AcceptOrDenyFriendRequestSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = FriendRequest
-        fields = '__all__'
-        extra_kwargs = {'request_status': {'read_only': True}, 'to_user': {'read_only': True}}
