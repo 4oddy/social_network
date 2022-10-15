@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'core.apps.CoreConfig',
     'main_app.apps.MainAppConfig',
     'chat_app.apps.ChatAppConfig',
+    'telegram.apps.TelegramConfig',
 
     # others
     'crispy_forms',
