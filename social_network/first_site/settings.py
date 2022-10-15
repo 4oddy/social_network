@@ -64,6 +64,8 @@ SIMPLE_JWT = {
 
 # Swagger
 SWAGGER_SETTINGS = {
+    'USE_SESSION_AUTH': False,
+
     'DEFAULT_FIELD_INSPECTORS': [
         'drf_yasg.inspectors.CamelCaseJSONFilter',
         'drf_yasg.inspectors.InlineSerializerInspector',
@@ -74,6 +76,14 @@ SWAGGER_SETTINGS = {
         'drf_yasg.inspectors.SimpleFieldInspector',
         'drf_yasg.inspectors.StringDefaultFieldInspector',
     ],
+
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+        }
+    }
 }
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
