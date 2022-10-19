@@ -7,8 +7,8 @@ User = get_user_model()
 
 class TelegramUser(models.Model):
     telegram_id = models.IntegerField(verbose_name='ID', null=False)
-    account = models.ForeignKey(User, verbose_name='Аккаунт', null=True, related_name='telegram_profile',
-                                on_delete=models.CASCADE)
+    account = models.OneToOneField(User, verbose_name='Аккаунт', null=True, related_name='telegram_profile',
+                                   on_delete=models.CASCADE)
     send_emails = models.BooleanField(verbose_name='Отправлять сообщения', default=True)
 
     class Meta:

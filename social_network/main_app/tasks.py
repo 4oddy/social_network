@@ -1,17 +1,19 @@
 from first_site.celery_app import app
 
-from django.core.mail import EmailMessage
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth import get_user_model
 
+from core.email.services import EmailSenderNotifies, TelegramSenderNotifies, SenderNotifiesAggregator
+
 User = get_user_model()
+
+sender_notifies = SenderNotifiesAggregator([EmailSenderNotifies(), TelegramSenderNotifies()])
 
 
 @app.task
 def send_email(subject, body, to):
     """ Simple sending email """
-    email = EmailMessage(subject=subject, body=body, to=to)
-    email.send()
+    sender_notifies.send_notify(subject=subject, body=body, to=to)
 
 
 @app.task

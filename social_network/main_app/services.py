@@ -68,12 +68,11 @@ def get_username_from_kwargs(kwargs: dict) -> str:
 
 
 def send_friend_request_email(from_user: User, to_user: User) -> None:
-    if settings.SEND_EMAILS:
-        email_body = settings.DEFAULT_EMAIL_FRIEND_REQUEST_BODY.format(name=to_user.get_name(),
-                                                                       name_requested=from_user.username,
-                                                                       date=get_current_date())
+    email_body = settings.DEFAULT_EMAIL_FRIEND_REQUEST_BODY.format(name=to_user.get_name(),
+                                                                   name_requested=from_user.username,
+                                                                   date=get_current_date())
 
-        send_email.delay(subject=settings.DEFAULT_EMAIL_FRIEND_REQUEST_SUBJECT, body=email_body, to=[to_user.email])
+    send_email.delay(subject=settings.DEFAULT_EMAIL_FRIEND_REQUEST_SUBJECT, body=email_body, to=to_user.id)
 
 
 def create_friend_request(from_user: User, to_user_id: int) -> FriendRequest | None:
@@ -97,7 +96,7 @@ def send_email_login(user: User) -> None:
 
         email_body = settings.DEFAULT_EMAIL_LOGIN_BODY.format(name=name, username=username, date=get_current_date())
 
-        send_email.delay(subject=settings.DEFAULT_EMAIL_LOGIN_SUBJECT, body=email_body, to=[user.email])
+        send_email.delay(subject=settings.DEFAULT_EMAIL_LOGIN_SUBJECT, body=email_body, to=user.id)
 
 
 def send_email_changed_settings(user: User) -> None:
@@ -106,7 +105,7 @@ def send_email_changed_settings(user: User) -> None:
 
         email_body = settings.DEFAULT_EMAIL_SETTINGS_CHANGED_BODY.format(name=name, date=get_current_date())
 
-        send_email.delay(subject=settings.DEFAULT_EMAIL_SETTINGS_CHANGED_SUBJECT, body=email_body, to=[user.email])
+        send_email.delay(subject=settings.DEFAULT_EMAIL_SETTINGS_CHANGED_SUBJECT, body=email_body, to=user.id)
 
 
 def delete_from_friendship(first: User, second: User) -> None:

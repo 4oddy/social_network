@@ -1,6 +1,6 @@
 from telebot import TeleBot
 
-from typing import Callable, Union
+from typing import Callable, Union, Any
 
 from django.contrib.auth import authenticate
 
@@ -26,7 +26,7 @@ class TelegramAuthentication:
         self._function = function
         return self.login_required
 
-    def login_required(self, message, *args, **kwargs) -> None:
+    def login_required(self, message: Any, *args, **kwargs) -> None:
         user = self._create_or_get_user(message.from_user.id)
 
         if not user.is_authenticated:
@@ -39,7 +39,7 @@ class TelegramAuthentication:
         obj, _ = TelegramUser.objects.get_or_create(telegram_id=user_id)
         return obj
 
-    def auth(self, message):
+    def auth(self, message: Any) -> None:
         try:
             username, password = message.text.split()[1:]
 
