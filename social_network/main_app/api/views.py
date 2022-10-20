@@ -16,8 +16,6 @@ User = get_user_model()
 
 
 class UserView(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin):
-    serializer_class = serializers.UserSerializer
-
     def get_queryset(self):
         if self.request.user.is_authenticated:
             return User.objects.all()
