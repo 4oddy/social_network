@@ -44,7 +44,7 @@ class GetterConservations(AbstractGetter):
         return group
 
     def get_user_groups(self, user: User) -> QuerySet[Conservation]:
-        return Conservation.objects.filter(Q(members=user))
+        return Conservation.objects.select_related('owner').prefetch_related('members').filter(Q(members=user))
 
 
 class GetterDialogs(AbstractGetter):
@@ -80,7 +80,7 @@ class GetterDialogs(AbstractGetter):
         return dialog
 
     def get_user_groups(self, user: User) -> QuerySet[Dialog]:
-        dialogs = Dialog.objects.filter(Q(owner=user) | Q(second_user=user))
+        dialogs = Dialog.objects.select_related('owner', 'second_user').filter(Q(owner=user) | Q(second_user=user))
         return dialogs
 
     get_group_sync = async_to_sync(get_group)

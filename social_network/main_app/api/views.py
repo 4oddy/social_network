@@ -3,13 +3,14 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 
 from django.contrib.auth import get_user_model
+from django.conf import settings
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 
 from . import serializers
 from . import permissions as custom_permissions
 
-from main_app.models import FriendRequest
+from main_app.models import FriendRequest, Post, Comment
 from main_app.services import delete_from_friendship, send_email_changed_settings
 
 User = get_user_model()
@@ -46,15 +47,22 @@ class UserView(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateMode
     @action(detail=False, methods=['PUT', 'PATCH'])
     def update_user(self, request):
         serializer = self.get_serializer(instance=request.user, data=request.data)
-
         serializer.is_valid(raise_exception=True)
         serializer.save()
         send_email_changed_settings(request.user)
         return Response(serializer.data)
 
     @action(detail=False, methods=['GET'])
-    def friends(self, request):
-        serializer = self.get_serializer(request.user.friends.all(), many=True)
+    def delete_profile_image(self, request):
+        if request.user.image != settings.DEFAULT_USER_IMAGE:
+            request.user.image = settings.DEFAULT_USER_IMAGE
+            request.user.save()
+            return Response({'success': True})
+        return Response({'success': False})
+
+    @action(detail=True, methods=['GET'])
+    def friends(self, request, pk=None):
+        serializer = self.get_serializer(self.get_object().friends.all(), many=True)
         return Response(serializer.data)
 
 
@@ -112,3 +120,46 @@ class FriendRequestView(viewsets.GenericViewSet, mixins.CreateModelMixin, mixins
         friend_request = self.get_object()
         friend_request.deny()
         return Response(status=status.HTTP_200_OK)
+
+
+class PostView(viewsets.ModelViewSet):
+    permission_classes = [
+        permissions.IsAuthenticated,
+        custom_permissions.CanEditOrDeletePost
+    ]
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
+    def get_serializer_class(self):
+        if self.action in ('comments', 'leave_comment'):
+            return serializers.CommentSerializer
+        return serializers.PostSerializer
+
+    def get_queryset(self, **kwargs):
+        if self.action == 'comments':
+            return Comment.objects.select_related('owner', 'post').filter(**kwargs)
+        return Post.objects.select_related('owner').all()
+
+    @action(detail=False, methods=['GET'])
+    def friends_posts(self, request):
+        serializer = self.get_serializer(self.get_queryset().friends_posts(request.user), many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['GET'])
+    def user_posts(self, request):
+        serializer = self.get_serializer(self.get_queryset().get_posts(request.user), many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['GET'])
+    def comments(self, request, pk=None):
+        serializer = self.get_serializer(self.get_queryset(post=pk), many=True)
+        return Response(serializer.data)
+
+    # TODO: make available to leave comments not only to owner
+    @action(detail=True, methods=['POST'])
+    def leave_comment(self, request, pk=None):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(owner=request.user, post=self.get_object())
+        return Response(serializer.data)
