@@ -97,8 +97,7 @@ class FriendRequestView(viewsets.GenericViewSet, mixins.CreateModelMixin, mixins
 
     def get_permissions(self):
         permission_classes = [
-            permissions.IsAuthenticated,
-            custom_permissions.IsInFriendRequest
+            permissions.IsAuthenticated
         ]
 
         if self.action in ('accept', 'deny'):
