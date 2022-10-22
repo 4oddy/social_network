@@ -111,14 +111,14 @@ class SenderMessages:
         self._saver: AbstractSaver = saver
         self._channel_layer = get_channel_layer()
 
-    async def send_message(self, sender: User, message: str, group: AbstractDialog) -> None:
+    async def send_message(self, sender: User, message: str, group: AbstractDialog) -> AbstractMessage:
         sender_dict: dict = await sync_to_async(model_to_dict)(sender, fields=('username',))
         sender_dict['image_url'] = sender.image.url
         sender_dict['profile_url'] = sender.get_absolute_url()
 
         group_uuid = str(group.uid)
 
-        await self._saver.save_message(user=sender, message=message, group=group)
+        message_instance = await self._saver.save_message(user=sender, message=message, group=group)
 
         sender_dict['date'] = get_current_date()
 
@@ -130,3 +130,5 @@ class SenderMessages:
                 'sender_dict': sender_dict
             }
         )
+
+        return message_instance

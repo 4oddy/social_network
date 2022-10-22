@@ -22,25 +22,21 @@ class UserView(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateMode
             return User.objects.all()
 
     def get_object(self):
-        self.serializer_class = serializers.UserUpdateSerializer
-        self.permission_classes.append(permissions.IsAuthenticated)
-
-        if self.request.user.is_authenticated:
-            if self.kwargs['pk'] == '0':
-                return self.request.user
-            return get_object_or_404(User, pk=self.kwargs['pk'])
+        if self.kwargs['pk'] == '0':
+            return self.request.user
+        return get_object_or_404(User, pk=self.kwargs['pk'])
 
     def get_permissions(self):
         permission_classes = [
             permissions.AllowAny,
         ]
 
-        if self.action in ('update_user', 'delete_profile_image', 'friends'):
+        if self.action in ('update_user', 'delete_profile_image', 'friends', 'retrieve'):
             permission_classes = [permissions.IsAuthenticated]
         return [permission() for permission in permission_classes]
 
     def get_serializer_class(self):
-        if self.action == 'update_user':
+        if self.action in ('update_user', 'retrieve'):
             return serializers.UserUpdateSerializer
         return serializers.UserSerializer
 

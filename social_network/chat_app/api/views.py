@@ -2,20 +2,19 @@ from rest_framework import viewsets, mixins, permissions, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
-from asgiref.sync import async_to_sync
-
-from . import serializers, permissions as custom_permissions
-from .. import services, exceptions
+from . import serializers
+from .. import services
 
 
 class BaseGroupView(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.RetrieveModelMixin):
-    _saver: services.AbstractSaver
+    permission_classes = [
+        permissions.IsAuthenticated
+    ]
+
     _getter: services.AbstractGetter
 
     _creating_message_serializer: serializers.BaseCreatingMessageSerializer
     _group_serializer: serializers.BaseGroupSerializer
-
-    _include_permission: custom_permissions.BasePermission
 
     def get_queryset(self):
         return self._getter.get_user_groups(self.request.user)
@@ -25,44 +24,24 @@ class BaseGroupView(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.Retri
             return self._creating_message_serializer
         return self._group_serializer
 
-    def get_permissions(self):
-        permission_classes = [permissions.IsAuthenticated, self._include_permission]
-        return [permission() for permission in permission_classes]
-
     @action(detail=True, methods=['POST'])
     def send_message(self, request, pk=None):
-        dialog = self.get_object()
-
-        serializer = self.get_serializer(data=request.data, context={'request': request})
-
-        if serializer.is_valid():
-            sender = services.SenderMessages(saver=self._saver)
-
-            try:
-                async_to_sync(sender.send_message)(sender=request.user,
-                                                   message=serializer.validated_data['text'],
-                                                   group=dialog)
-            except exceptions.UserNotInGroup:
-                return Response(status=status.HTTP_403_FORBIDDEN)
-            return Response(data=serializer.data, status=status.HTTP_201_CREATED)
-        return Response(data=serializer.errors)
+        group = self.get_object()
+        serializer = self.get_serializer(data=request.data, context={'request': request, 'group': group})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(data=serializer.data, status=status.HTTP_201_CREATED)
 
 
 class DialogView(BaseGroupView):
-    _saver = services.SaverDialogMessages()
     _getter = services.GetterDialogs()
 
     _creating_message_serializer = serializers.CreateDialogMessageSerializer
     _group_serializer = serializers.DialogSerializer
 
-    _include_permission = custom_permissions.InDialog
-
 
 class ConservationView(BaseGroupView):
-    _saver = services.SaverConservationMessages()
     _getter = services.GetterConservations()
 
     _creating_message_serializer = serializers.CreateConservationMessageSerializer
     _group_serializer = serializers.ConservationSerializer
-
-    _include_permission = custom_permissions.InConservation
