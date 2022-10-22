@@ -6,7 +6,18 @@ TelegramAuthentication.set_bot(bot)
 auth_system = TelegramAuthentication()
 
 
-@bot.message_handler(commands=['start'])
+def hello(message):
+    bot.reply_to(message, 'Hello')
+
+
+@bot.message_handler(commands=['help'], func=hello)
 @auth_system.basic_authentication
 def welcome(message):
-    bot.reply_to(message, 'Hello')
+    pass
+
+
+@bot.message_handler(commands=['sending_notifies'])
+@auth_system.basic_authentication
+def switch_sending_emails(message, user):
+    sending = user.switch_sending_emails()
+    bot.reply_to(message, 'Уведомления {mode}'.format(mode='включены' if sending else 'выключены'))

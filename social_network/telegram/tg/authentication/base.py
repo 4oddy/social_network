@@ -8,7 +8,7 @@ from ...models import TelegramUser
 
 
 class TelegramAuthentication:
-    bot: TeleBot | None = None
+    bot: Union[TeleBot, None] = None
     _function: Union[Callable, None] = None
 
     def __init__(self):
@@ -32,7 +32,7 @@ class TelegramAuthentication:
         if not user.is_authenticated:
             self.bot.reply_to(message, self._not_authenticated_msg)
         else:
-            self._function(message, *args, **kwargs)
+            self._function(message, user, *args, **kwargs)
 
     @staticmethod
     def _create_or_get_user(user_id: int) -> TelegramUser:

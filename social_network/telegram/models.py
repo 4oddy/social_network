@@ -15,6 +15,11 @@ class TelegramUser(models.Model):
         verbose_name = 'Telegram пользователь'
         verbose_name_plural = 'Telegram пользователи'
 
+    def switch_sending_emails(self):
+        self.send_emails = True if not self.send_emails else False
+        self.save()
+        return self.send_emails
+
     @property
     def is_authenticated(self):
         if self.account is not None:
