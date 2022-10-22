@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 
 from django.core.mail import EmailMessage
 from django.contrib.auth import get_user_model
-from django.conf import settings
 
 from telegram.tg.bot import bot
 
@@ -37,6 +36,5 @@ class SenderNotifiesAggregator(AbstractSenderNotifies):
         self.senders = senders
 
     def send_notify(self, subject: str, body: str, to: int) -> None:
-        if settings.SEND_EMAILS:
-            for sender in self.senders:
-                sender.send_notify(subject, body, to)
+        for sender in self.senders:
+            sender.send_notify(subject, body, to)

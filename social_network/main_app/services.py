@@ -13,6 +13,13 @@ from core.utils import get_current_date
 User = get_user_model()
 
 
+def send_emails(function):
+    def wrapper(*args, **kwargs):
+        if settings.SEND_EMAILS:
+            function(*args, **kwargs)
+    return wrapper
+
+
 def find_users(username: str) -> QuerySet:
     queryset = User.objects.filter(username__icontains=username)
     return queryset
@@ -67,12 +74,28 @@ def get_username_from_kwargs(kwargs: dict) -> str:
     return kwargs['username'].replace('@', '')
 
 
+@send_emails
 def send_friend_request_email(from_user: User, to_user: User) -> None:
     email_body = settings.DEFAULT_EMAIL_FRIEND_REQUEST_BODY.format(name=to_user.get_name(),
                                                                    name_requested=from_user.username,
                                                                    date=get_current_date())
 
     send_email.delay(subject=settings.DEFAULT_EMAIL_FRIEND_REQUEST_SUBJECT, body=email_body, to=to_user.id)
+
+
+@send_emails
+def send_email_login(user: User) -> None:
+    name = user.first_name if user.first_name else user.username
+    username = user.username
+    email_body = settings.DEFAULT_EMAIL_LOGIN_BODY.format(name=name, username=username, date=get_current_date())
+    send_email.delay(subject=settings.DEFAULT_EMAIL_LOGIN_SUBJECT, body=email_body, to=user.id)
+
+
+@send_emails
+def send_email_changed_settings(user: User) -> None:
+    name = user.first_name if user.first_name else user.username
+    email_body = settings.DEFAULT_EMAIL_SETTINGS_CHANGED_BODY.format(name=name, date=get_current_date())
+    send_email.delay(subject=settings.DEFAULT_EMAIL_SETTINGS_CHANGED_SUBJECT, body=email_body, to=user.id)
 
 
 def create_friend_request(from_user: User, to_user_id: int) -> FriendRequest | None:
@@ -87,25 +110,6 @@ def create_friend_request(from_user: User, to_user_id: int) -> FriendRequest | N
         send_friend_request_email(from_user=from_user, to_user=to_user)
 
     return request
-
-
-def send_email_login(user: User) -> None:
-    if settings.SEND_EMAILS:
-        name = user.first_name if user.first_name else user.username
-        username = user.username
-
-        email_body = settings.DEFAULT_EMAIL_LOGIN_BODY.format(name=name, username=username, date=get_current_date())
-
-        send_email.delay(subject=settings.DEFAULT_EMAIL_LOGIN_SUBJECT, body=email_body, to=user.id)
-
-
-def send_email_changed_settings(user: User) -> None:
-    if settings.SEND_EMAILS:
-        name = user.first_name if user.first_name else user.username
-
-        email_body = settings.DEFAULT_EMAIL_SETTINGS_CHANGED_BODY.format(name=name, date=get_current_date())
-
-        send_email.delay(subject=settings.DEFAULT_EMAIL_SETTINGS_CHANGED_SUBJECT, body=email_body, to=user.id)
 
 
 def delete_from_friendship(first: User, second: User) -> None:
