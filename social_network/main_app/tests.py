@@ -2,7 +2,6 @@ from django.test import TestCase
 from django.shortcuts import reverse
 from django.contrib.auth import get_user_model
 
-from datetime import datetime
 from uuid import uuid4
 
 from .models import FriendRequest, Post
@@ -73,8 +72,12 @@ class TestUser(TestCase):
         self.assertFalse(User.in_friendship(self.user, self.second_user))
 
     def test_negative_friend_request(self):
-        request = create_friend_request(from_user=self.user, to_user_id=self.user.pk)
-        self.assertIsNone(request)
+        try:
+            create_friend_request(from_user=self.user, to_user_id=self.user.id)
+        except Exception:
+            pass
+        else:
+            self.fail('Test Failed! Request has been created')
 
 
 class TestPost(TestCase):

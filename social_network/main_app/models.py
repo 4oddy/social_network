@@ -114,6 +114,12 @@ class FriendRequest(models.Model):
             )  # prohibits creating of existing request
         ]
 
+    def clean(self):
+        super().clean()
+
+        if self.from_user == self.to_user:
+            raise ValidationError('Отправитель заявки не может быть её получателем')
+
     def accept(self):
         if self.request_status != self.RequestStatuses.ACCEPTED:
             first_user, second_user = self.from_user, self.to_user

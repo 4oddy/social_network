@@ -3,7 +3,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 
 from main_app.models import FriendRequest, Post, Comment
-from main_app.services import create_friend_request
+from main_app.services import create_friend_request, find_friend_request
 
 User = get_user_model()
 
@@ -36,6 +36,18 @@ class FriendRequestSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         request = create_friend_request(from_user=self.context['request'].user, to_user_id=validated_data['to_user'].id)
         return request
+
+    def validate(self, attrs):
+        from_user = self.context['request'].user
+        to_user = attrs['to_user']
+
+        if from_user == to_user:
+            raise serializers.ValidationError('Отправитель заявки не может быть её получателем')
+
+        if find_friend_request(from_user, to_user):
+            raise serializers.ValidationError('Такая заявка уже существует')
+
+        return super().validate(attrs)
 
 
 class PostSerializer(serializers.ModelSerializer):

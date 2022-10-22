@@ -72,12 +72,9 @@ class FriendRequestView(viewsets.GenericViewSet, mixins.CreateModelMixin, mixins
 
     def create(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data, context={'request': request})
-
-        if serializer.is_valid():
-            request = serializer.create(validated_data=serializer.validated_data)
-            if request is not None:
-                return Response(serializer.to_representation(request), status=status.HTTP_201_CREATED)
-        return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 
     def destroy(self, request, *args, **kwargs):
         try:

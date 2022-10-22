@@ -3,6 +3,7 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.shortcuts import reverse
 from django.http import HttpRequest
+from django.core.exceptions import ValidationError
 
 import uuid
 
@@ -56,6 +57,22 @@ class Dialog(AbstractDialog):
     class Meta:
         verbose_name = 'Диалог'
         verbose_name_plural = 'Диалоги'
+        constraints = [
+            models.CheckConstraint(
+                check=~models.Q(owner=models.F('second_user')),
+                name='check_self_dialog'
+            ),  # prohibits dialog with yourself
+            models.UniqueConstraint(
+                fields=('owner', 'second_user'),
+                name='unique_dialog'
+            )  # prohibits the same dialog
+        ]
+
+    def clean(self):
+        super().clean()
+
+        if self.owner == self.second_user:
+            raise ValidationError('Нельзя создать диалог с одним и тем же пользователем')
 
     def __str__(self):
         return f'{self.owner} - {self.second_user}'

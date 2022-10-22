@@ -100,17 +100,10 @@ def send_email_changed_settings(user: User) -> None:
     send_email.delay(subject=settings.DEFAULT_EMAIL_SETTINGS_CHANGED_SUBJECT, body=email_body, to=user.id)
 
 
-def create_friend_request(from_user: User, to_user_id: int) -> FriendRequest | None:
-    request = None
-
-    if from_user.id != int(to_user_id):
-        if find_friend_request(first_user=from_user, second_user=to_user_id) is None:
-            request = FriendRequest.objects.create(from_user=from_user, to_user_id=to_user_id)
-
-    if request is not None:
-        to_user = get_object_or_404(User, pk=to_user_id)
-        send_friend_request_email(from_user=from_user, to_user=to_user)
-
+def create_friend_request(from_user: User, to_user_id: int) -> FriendRequest:
+    request = FriendRequest.objects.create(from_user=from_user, to_user_id=to_user_id)
+    to_user = get_object_or_404(User, pk=to_user_id)
+    send_friend_request_email(from_user=from_user, to_user=to_user)
     return request
 
 

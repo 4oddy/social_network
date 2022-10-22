@@ -53,9 +53,6 @@ class GetterDialogs(AbstractGetter):
     @sync_to_async
     def get_group(self, user: User, companion: User | None = None, companion_username: str | None = None) -> Dialog:
         if companion:
-            if companion.username == user.username:
-                raise SelfDialogCreated('Пользователь не может начать диалог с самим собой')
-
             dialog = Dialog.objects.select_related('owner', 'second_user').filter(
                 Q(owner=user) & Q(name=companion.username) & Q(second_user=companion) |
                 Q(owner=companion) & Q(name=user.username) & Q(second_user=user)).first()
@@ -64,9 +61,6 @@ class GetterDialogs(AbstractGetter):
                 dialog = Dialog.objects.create(name=companion.username, owner=user, second_user=companion)
 
         elif companion_username:
-            if companion_username == user.username:
-                raise SelfDialogCreated('Пользователь не может начать диалог с самим собой')
-
             dialog = Dialog.objects.select_related('owner', 'second_user').filter(
                 Q(owner=user) & Q(name=companion_username) & Q(second_user__username=companion_username) |
                 Q(owner__username=companion_username) & Q(name=user.username) & Q(second_user=user)).first()
