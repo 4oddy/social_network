@@ -4,6 +4,8 @@ from django.conf import settings
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 
+from typing import Callable
+
 from .models import FriendRequest
 from .tasks import send_email
 
@@ -13,8 +15,8 @@ from core.utils import get_current_date
 User = get_user_model()
 
 
-def send_emails(function):
-    def wrapper(*args, **kwargs):
+def send_emails(function: Callable) -> Callable:
+    def wrapper(*args, **kwargs) -> None:
         if settings.SEND_EMAILS:
             function(*args, **kwargs)
     return wrapper
