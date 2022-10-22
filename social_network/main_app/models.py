@@ -132,8 +132,8 @@ class FriendRequest(models.Model):
 class Post(models.Model):
     title = models.CharField(verbose_name='Заголовок', max_length=50, null=True, blank=True)
     description = models.TextField(verbose_name='Текст', null=True, blank=True)
-    owner = models.ForeignKey(CustomUser, verbose_name='Автор',
-                              null=False, blank=False, on_delete=models.CASCADE, related_name='posts')
+    owner = models.ForeignKey(CustomUser, verbose_name='Автор', null=False, blank=False,
+                              on_delete=models.CASCADE, related_name='posts')
     post_uuid = models.UUIDField(unique=True, editable=False, default=uuid.uuid4)
     date_of_creating = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
     date_of_update = models.DateTimeField(auto_now=True, verbose_name='Дата обновления')

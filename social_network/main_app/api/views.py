@@ -35,7 +35,7 @@ class UserView(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateMode
             permissions.AllowAny,
         ]
 
-        if self.action == 'update_user' or self.action == 'friends':
+        if self.action in ('update_user', 'delete_profile_image', 'friends'):
             permission_classes = [permissions.IsAuthenticated]
         return [permission() for permission in permission_classes]
 
@@ -123,11 +123,6 @@ class FriendRequestView(viewsets.GenericViewSet, mixins.CreateModelMixin, mixins
 
 
 class PostView(viewsets.ModelViewSet):
-    permission_classes = [
-        permissions.IsAuthenticated,
-        custom_permissions.CanEditOrDeletePost
-    ]
-
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
@@ -135,6 +130,15 @@ class PostView(viewsets.ModelViewSet):
         if self.action in ('comments', 'leave_comment'):
             return serializers.CommentSerializer
         return serializers.PostSerializer
+
+    def get_permissions(self):
+        permission_classes = [
+            permissions.IsAuthenticated
+        ]
+
+        if self.action != 'leave_comment':
+            permission_classes.append(custom_permissions.CanEditOrDeletePost)
+        return [permission() for permission in permission_classes]
 
     def get_queryset(self, **kwargs):
         if self.action == 'comments':
@@ -156,7 +160,6 @@ class PostView(viewsets.ModelViewSet):
         serializer = self.get_serializer(self.get_queryset(post=pk), many=True)
         return Response(serializer.data)
 
-    # TODO: make available to leave comments not only to owner
     @action(detail=True, methods=['POST'])
     def leave_comment(self, request, pk=None):
         serializer = self.get_serializer(data=request.data)
