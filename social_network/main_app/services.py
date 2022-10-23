@@ -1,4 +1,4 @@
-from django.db.models import Q, QuerySet
+from django.db.models import QuerySet
 from django.contrib.auth import get_user_model
 from django.conf import settings
 from django.http import HttpRequest
@@ -25,12 +25,6 @@ def send_emails(function: Callable) -> Callable:
 def find_users(username: str) -> QuerySet:
     queryset = User.objects.filter(username__icontains=username)
     return queryset
-
-
-def find_friend_request(first_user: User | int, second_user: User | int) -> FriendRequest:
-    request = FriendRequest.objects.filter(Q(from_user=first_user) & Q(to_user=second_user) |
-                                           Q(from_user=second_user) & Q(to_user=first_user)).first()
-    return request
 
 
 def get_request_info(first_user: User, second_user: User) -> dict:
@@ -68,7 +62,6 @@ def get_data_for_action(request: HttpRequest) -> dict:
     user_path = request.POST['current_path']
     from_user = request.user
     to_user_id = request.POST['user_id']
-
     return {'user_path': user_path, 'from_user': from_user, 'to_user_id': to_user_id}
 
 
@@ -108,7 +101,7 @@ def create_friend_request(from_user: User, to_user_id: int) -> FriendRequest:
 
 
 def delete_from_friendship(first: User, second: User) -> None:
-    request = find_friend_request(first_user=first, second_user=second)
+    request = FriendRequest.find_friend_request(first_user=first, second_user=second)
 
     if request:
         request.delete()

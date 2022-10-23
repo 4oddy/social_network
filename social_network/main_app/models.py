@@ -32,10 +32,9 @@ class CustomUser(AbstractUser):
     )
 
     email = models.EmailField(unique=True, validators=[EmailValidator])
-    image = models.ImageField(verbose_name='Фотография профиля',
-                              upload_to='images/user_images', default=settings.DEFAULT_USER_IMAGE)
-    last_online = models.DateTimeField(verbose_name='Последний онлайн',
-                                       auto_now=True, blank=True, null=True)
+    image = models.ImageField(verbose_name='Фотография профиля', upload_to='images/user_images',
+                              default=settings.DEFAULT_USER_IMAGE)
+    last_online = models.DateTimeField(verbose_name='Последний онлайн', auto_now=True)
     device = models.CharField(verbose_name='Устройство', max_length=6, choices=Devices.choices, default=Devices.PC)
     friends = models.ManyToManyField('self')
 
@@ -91,10 +90,10 @@ class FriendRequest(models.Model):
         ACCEPTED = 'a', 'ACCEPTED'
         DENIED = 'd', 'DENIED'
 
-    from_user = models.ForeignKey(CustomUser, null=False, verbose_name='От кого',
-                                  related_name='from_user_request', on_delete=models.CASCADE)
-    to_user = models.ForeignKey(CustomUser, null=False, verbose_name='Кому',
-                                related_name='to_user_request', on_delete=models.CASCADE)
+    from_user = models.ForeignKey(CustomUser, null=False, verbose_name='От кого', related_name='from_user_request',
+                                  on_delete=models.CASCADE)
+    to_user = models.ForeignKey(CustomUser, null=False, verbose_name='Кому', related_name='to_user_request',
+                                on_delete=models.CASCADE)
     request_status = models.CharField(verbose_name='Статус заявки', max_length=1, choices=RequestStatuses.choices,
                                       default=RequestStatuses.CREATED)
     date_of_request = models.DateTimeField(verbose_name='Дата заявки', auto_now_add=True)
@@ -119,6 +118,8 @@ class FriendRequest(models.Model):
 
         if self.from_user == self.to_user:
             raise ValidationError('Отправитель заявки не может быть её получателем')
+        if self.find_friend_request(self.from_user, self.to_user):
+            raise ValidationError('Такая заявка уже существует')
 
     def accept(self):
         if self.request_status != self.RequestStatuses.ACCEPTED:
@@ -133,6 +134,12 @@ class FriendRequest(models.Model):
         if self.request_status != self.RequestStatuses.DENIED and self.request_status != self.RequestStatuses.ACCEPTED:
             self.request_status = self.RequestStatuses.DENIED
             self.save()
+
+    @staticmethod
+    def find_friend_request(first_user, second_user):
+        request = FriendRequest.objects.filter(models.Q(from_user=first_user) & models.Q(to_user=second_user) |
+                                               models.Q(from_user=second_user) & models.Q(to_user=first_user)).first()
+        return request
 
 
 class Post(models.Model):

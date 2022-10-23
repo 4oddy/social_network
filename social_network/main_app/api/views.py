@@ -36,7 +36,7 @@ class UserView(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateMode
         return [permission() for permission in permission_classes]
 
     def get_serializer_class(self):
-        if self.action in ('update_user', 'retrieve'):
+        if self.action in ('update_user', ):
             return serializers.UserUpdateSerializer
         return serializers.UserSerializer
 

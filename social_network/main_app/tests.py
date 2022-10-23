@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 from uuid import uuid4
 
 from .models import FriendRequest, Post
-from .services import create_friend_request, delete_from_friendship, find_friend_request
+from .services import create_friend_request, delete_from_friendship
 
 User = get_user_model()
 
@@ -52,7 +52,7 @@ class TestUser(TestCase):
 
         # test deletion from friendship
         delete_from_friendship(self.user, self.second_user)
-        self.assertFalse(find_friend_request(first_user=self.user, second_user=self.second_user))
+        self.assertFalse(FriendRequest.find_friend_request(first_user=self.user, second_user=self.second_user))
         self.assertFalse(User.in_friendship(self.user, self.second_user))
 
     def test_custom_friend_request(self):
@@ -68,12 +68,29 @@ class TestUser(TestCase):
         self.assertTrue(User.in_friendship(self.user, self.second_user))
 
         delete_from_friendship(self.user, self.second_user)
-        self.assertFalse(find_friend_request(first_user=self.user, second_user=self.second_user))
+        self.assertFalse(FriendRequest.find_friend_request(first_user=self.user, second_user=self.second_user))
         self.assertFalse(User.in_friendship(self.user, self.second_user))
 
-    def test_negative_friend_request(self):
+    def test_negative_self_friend_request(self):
         try:
             create_friend_request(from_user=self.user, to_user_id=self.user.id)
+        except Exception:
+            pass
+        else:
+            self.fail('Test Failed! Request has been created')
+
+    def test_negative_existing_friend_request(self):
+        create_friend_request(from_user=self.user, to_user_id=self.second_user.pk)
+
+        try:
+            create_friend_request(from_user=self.user, to_user_id=self.second_user.pk)
+        except Exception:
+            pass
+        else:
+            self.fail('Test Failed! Request has been created')
+
+        try:
+            create_friend_request(from_user=self.second_user, to_user_id=self.user.pk)
         except Exception:
             pass
         else:
