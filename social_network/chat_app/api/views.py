@@ -33,15 +33,27 @@ class BaseGroupView(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.Retri
         return Response(data=serializer.data, status=status.HTTP_201_CREATED)
 
 
-class DialogView(BaseGroupView):
+class DialogView(BaseGroupView, mixins.CreateModelMixin):
     _getter = services.GetterDialogs()
 
     _creating_message_serializer = serializers.CreateDialogMessageSerializer
     _group_serializer = serializers.DialogSerializer
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data, context={'request': request, 'creating': True})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({'id': serializer.data['id'], 'success': True})
 
-class ConservationView(BaseGroupView):
+
+class ConservationView(BaseGroupView, mixins.CreateModelMixin):
     _getter = services.GetterConservations()
 
     _creating_message_serializer = serializers.CreateConservationMessageSerializer
     _group_serializer = serializers.ConservationSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({'id': serializer.data['id'], 'success': True})

@@ -9,7 +9,7 @@ from .. import services
 
 
 class BaseGroupSerializer(serializers.ModelSerializer):
-    owner = UserSerializer()
+    owner = UserSerializer(read_only=True)
 
     class BaseMeta:
         model = models.AbstractDialog
@@ -17,10 +17,25 @@ class BaseGroupSerializer(serializers.ModelSerializer):
 
 
 class DialogSerializer(BaseGroupSerializer):
-    second_user = UserSerializer()
+    second_user = UserSerializer(read_only=True)
 
     class Meta(BaseGroupSerializer.BaseMeta):
         model = models.Dialog
+        read_only_fields = ('name', )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        context = kwargs.pop('context')
+
+        if context.pop('creating', None):
+            user = context['request'].user
+            self.fields['second_user'] = serializers.PrimaryKeyRelatedField(queryset=user.friends.all(),
+                                                                            write_only=True)
+
+    def create(self, validated_data):
+        dialog = services.GetterDialogs().get_group_sync(user=self.context['request'].user,
+                                                         companion=validated_data['second_user'])
+        return dialog
 
 
 class ConservationSerializer(BaseGroupSerializer):
@@ -28,6 +43,18 @@ class ConservationSerializer(BaseGroupSerializer):
 
     class Meta(BaseGroupSerializer.BaseMeta):
         model = models.Conservation
+
+    def to_internal_value(self, data):
+        self.fields['members'] = serializers.PrimaryKeyRelatedField(queryset=self.context['request'].user.friends.all(),
+                                                                    write_only=True, many=True)
+        return super().to_internal_value(data)
+
+    def create(self, validated_data):
+        owner = self.context['request'].user
+        conservation = models.Conservation.objects.create(owner=owner, name=validated_data['name'])
+        validated_data['members'].append(owner)
+        conservation.members.set(validated_data['members'])
+        return conservation
 
 
 class DialogMessageSerializer(serializers.ModelSerializer):
