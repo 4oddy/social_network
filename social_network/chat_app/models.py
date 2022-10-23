@@ -99,6 +99,7 @@ class ConservationMessage(AbstractMessage):
     class Meta:
         verbose_name = 'Сообщение беседы'
         verbose_name_plural = 'Сообщения беседы'
+        ordering = ['date_of_sending']
 
     def save(
         self, force_insert=False, force_update=False, using=None, update_fields=None
@@ -115,6 +116,7 @@ class DialogMessage(AbstractMessage):
     class Meta:
         verbose_name = 'Сообщение диалога'
         verbose_name_plural = 'Сообщения диалога'
+        ordering = ['date_of_sending']
 
     def save(
         self, force_insert=False, force_update=False, using=None, update_fields=None

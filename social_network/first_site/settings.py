@@ -17,7 +17,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-SEND_EMAILS = False
+SEND_EMAILS = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -251,16 +251,6 @@ DEFAULT_EMAIL_SETTINGS_CHANGED_BODY = 'Здравствуйте, {name}\n\nКт�
 DEFAULT_EMAIL_FRIEND_REQUEST_SUBJECT = 'Новая заявка в друзья'
 DEFAULT_EMAIL_FRIEND_REQUEST_BODY = 'Здравствуйте, {name}\n\n{name_requested} отправил вам заявку в друзья\n\n{date}'
 
-
-# Cache setting
-
-# CACHES = {
-#     'default':
-#         {
-#             'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-#             'LOCATION': 'redis://127.0.0.1:6379'
-#         }
-# }
 
 if DEBUG:
     # Applying debug toolbar
