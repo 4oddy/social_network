@@ -57,16 +57,20 @@ class ConservationSerializer(BaseGroupSerializer):
         return conservation
 
 
-class DialogMessageSerializer(serializers.ModelSerializer):
-    class Meta:
+class BaseMessageSerializer(serializers.ModelSerializer):
+    class BaseMeta:
+        model = models.AbstractDialog
+        fields = '__all__'
+
+
+class DialogMessageSerializer(BaseMessageSerializer):
+    class Meta(BaseMessageSerializer.BaseMeta):
         model = models.DialogMessage
-        fields = '__all__'
 
 
-class ConservationMessageSerializer(serializers.ModelSerializer):
-    class Meta:
+class ConservationMessageSerializer(BaseMessageSerializer):
+    class Meta(BaseMessageSerializer.BaseMeta):
         model = models.ConservationMessage
-        fields = '__all__'
 
 
 class BaseCreatingMessageSerializer(serializers.ModelSerializer):

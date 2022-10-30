@@ -4,6 +4,7 @@ from rest_framework.decorators import action
 
 from . import serializers
 from .. import services
+from .. import models
 
 
 class BaseGroupView(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.RetrieveModelMixin):
@@ -13,6 +14,9 @@ class BaseGroupView(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.Retri
 
     _getter: services.AbstractGetter
 
+    _message_model: models.AbstractMessage
+
+    _message_serializer: serializers.BaseMessageSerializer
     _creating_message_serializer: serializers.BaseCreatingMessageSerializer
     _group_serializer: serializers.BaseGroupSerializer
 
@@ -22,6 +26,8 @@ class BaseGroupView(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.Retri
     def get_serializer_class(self):
         if self.action == 'send_message':
             return self._creating_message_serializer
+        elif self.action == 'group_messages':
+            return self._message_serializer
         return self._group_serializer
 
     @action(detail=True, methods=['POST'])
@@ -32,10 +38,19 @@ class BaseGroupView(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.Retri
         serializer.save()
         return Response(data=serializer.data, status=status.HTTP_201_CREATED)
 
+    @action(detail=True, methods=['GET'])
+    def group_messages(self, request, pk=None):
+        group = self.get_object()
+        serializer = self.get_serializer(self._message_model.objects.filter(group=group), many=True)
+        return Response(serializer.data)
+
 
 class DialogView(BaseGroupView, mixins.CreateModelMixin):
     _getter = services.GetterDialogs()
 
+    _message_model = models.DialogMessage
+
+    _message_serializer = serializers.DialogMessageSerializer
     _creating_message_serializer = serializers.CreateDialogMessageSerializer
     _group_serializer = serializers.DialogSerializer
 
@@ -49,6 +64,9 @@ class DialogView(BaseGroupView, mixins.CreateModelMixin):
 class ConservationView(BaseGroupView, mixins.CreateModelMixin):
     _getter = services.GetterConservations()
 
+    _message_model = models.ConservationMessage
+
+    _message_serializer = serializers.ConservationMessageSerializer
     _creating_message_serializer = serializers.CreateConservationMessageSerializer
     _group_serializer = serializers.ConservationSerializer
 
