@@ -2,18 +2,12 @@ from django.test import TestCase
 from django.shortcuts import reverse
 from django.contrib.auth import get_user_model
 
-from uuid import uuid4
+from core.utils import generate_user_data
 
 from .models import FriendRequest, Post
 from .services import create_friend_request, delete_from_friendship
 
 User = get_user_model()
-
-
-def generate_user_data():
-    username = f'test{uuid4()}'
-    email = username + '@mail.ru'
-    return {'username': username, 'password': username, 'email': email}
 
 
 class TestUser(TestCase):
