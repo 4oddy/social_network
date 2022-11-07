@@ -42,13 +42,11 @@ class UserView(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateMode
 
     @action(detail=False, methods=['PUT', 'PATCH'])
     def update_user(self, request):
-        if request.user.is_authenticated:
-            serializer = self.get_serializer(instance=request.user, data=request.data)
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            send_email_changed_settings(request.user)
-            return Response(serializer.data)
-        return Response(status=status.HTTP_401_UNAUTHORIZED)
+        serializer = self.get_serializer(instance=request.user, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        send_email_changed_settings(request.user)
+        return Response(serializer.data)
 
     @action(detail=False, methods=['GET'])
     def delete_profile_image(self, request):

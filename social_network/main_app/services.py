@@ -80,7 +80,7 @@ def send_friend_request_email(from_user: User, to_user: User) -> None:
 
 @send_emails
 def send_email_login(user: User) -> None:
-    name = user.first_name if user.first_name else user.username
+    name = user.get_name()
     username = user.username
     email_body = settings.DEFAULT_EMAIL_LOGIN_BODY.format(name=name, username=username, date=get_current_date())
     send_email.delay(subject=settings.DEFAULT_EMAIL_LOGIN_SUBJECT, body=email_body, to=user.id)
@@ -88,7 +88,7 @@ def send_email_login(user: User) -> None:
 
 @send_emails
 def send_email_changed_settings(user: User) -> None:
-    name = user.first_name if user.first_name else user.username
+    name = user.get_name()
     email_body = settings.DEFAULT_EMAIL_SETTINGS_CHANGED_BODY.format(name=name, date=get_current_date())
     send_email.delay(subject=settings.DEFAULT_EMAIL_SETTINGS_CHANGED_SUBJECT, body=email_body, to=user.id)
 

@@ -156,6 +156,7 @@ class Post(models.Model):
     class Meta:
         verbose_name = 'Запись'
         verbose_name_plural = 'Записи'
+        ordering = ['-date_of_creating']
 
     def clean(self):
         if not self.title and not self.description:
