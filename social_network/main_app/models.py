@@ -118,6 +118,7 @@ class FriendRequest(models.Model):
 
         if self.from_user == self.to_user:
             raise ValidationError('Отправитель заявки не может быть её получателем')
+
         if self.find_friend_request(self.from_user, self.to_user):
             raise ValidationError('Такая заявка уже существует')
 
@@ -162,9 +163,6 @@ class Post(models.Model):
         if not self.title and not self.description:
             raise ValidationError('Пост не может быть пустым')
 
-        if len(str(self.title)) > 50:
-            raise ValidationError({'title': 'Максимальная длина: 50'})
-
     def get_absolute_url(self):
         return reverse('main:post_page', kwargs={'post_uuid': self.post_uuid})
 
@@ -178,7 +176,3 @@ class Comment(models.Model):
     class Meta:
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
-
-    def clean(self):
-        if len(self.text) > 200:
-            raise ValidationError({'text': 'Максимальная длина: 200'})
