@@ -1,11 +1,14 @@
 from rest_framework import serializers
 
+from django.contrib.auth import get_user_model
+
 from asgiref.sync import async_to_sync
 
 from main_app.api.serializers import UserSerializer
 
-from .. import models
-from .. import services
+from .. import models, services
+
+User = get_user_model()
 
 
 class BaseGroupSerializer(serializers.ModelSerializer):
@@ -18,42 +21,46 @@ class BaseGroupSerializer(serializers.ModelSerializer):
 
 class DialogSerializer(BaseGroupSerializer):
     second_user = UserSerializer(read_only=True)
+    second_user_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), write_only=True)
 
     class Meta(BaseGroupSerializer.BaseMeta):
         model = models.Dialog
         read_only_fields = ('name', )
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        context = kwargs.pop('context')
-
-        if context.pop('creating', None):
-            user = context['request'].user
-            self.fields['second_user'] = serializers.PrimaryKeyRelatedField(queryset=user.friends.all(),
-                                                                            write_only=True)
+    def validate_second_user_id(self, value):
+        if value not in self.context['request'].user.friends.all():
+            raise serializers.ValidationError('Не в друзьях')
+        return value
 
     def create(self, validated_data):
         dialog = services.GetterDialogs().get_group_sync(user=self.context['request'].user,
-                                                         companion=validated_data['second_user'])
+                                                         companion=validated_data['second_user_id'])
         return dialog
 
 
 class ConservationSerializer(BaseGroupSerializer):
-    members = UserSerializer(many=True)
+    members = UserSerializer(many=True, read_only=True)
+    members_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), write_only=True, many=True)
 
     class Meta(BaseGroupSerializer.BaseMeta):
         model = models.Conservation
 
-    def to_internal_value(self, data):
-        self.fields['members'] = serializers.PrimaryKeyRelatedField(queryset=self.context['request'].user.friends.all(),
-                                                                    write_only=True, many=True)
-        return super().to_internal_value(data)
+    def validate_members_id(self, value):
+        user = self.context['request'].user
+        check = all([val in user.friends.all() for val in value if val != user])
+        if not check:
+            raise serializers.ValidationError('Не в друзьях')
+        return value
 
     def create(self, validated_data):
         owner = self.context['request'].user
+        members = validated_data['members_id']
         conservation = models.Conservation.objects.create(owner=owner, name=validated_data['name'])
-        validated_data['members'].append(owner)
-        conservation.members.set(validated_data['members'])
+
+        if owner not in members:
+            members.append(owner)
+
+        conservation.members.set(members)
         return conservation
 
 

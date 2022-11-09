@@ -3,8 +3,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 
 from . import serializers
-from .. import services
-from .. import models
+from .. import services, models
 
 
 class BaseGroupView(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.RetrieveModelMixin):
@@ -55,7 +54,7 @@ class DialogView(BaseGroupView, mixins.CreateModelMixin):
     _group_serializer = serializers.DialogSerializer
 
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data, context={'request': request, 'creating': True})
+        serializer = self.get_serializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({'id': serializer.data['id'], 'success': True})
