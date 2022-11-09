@@ -28,7 +28,12 @@ class DialogSerializer(BaseGroupSerializer):
         read_only_fields = ('name', )
 
     def validate_second_user_id(self, value):
-        if value not in self.context['request'].user.friends.all():
+        user = self.context['request'].user
+
+        if value == user:
+            raise serializers.ValidationError('Нельзя начать диалог с собой')
+
+        if value not in user.friends.all():
             raise serializers.ValidationError('Не в друзьях')
         return value
 
