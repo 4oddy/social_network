@@ -29,7 +29,6 @@ class CustomBackend(BaseBackend):
                 # by username
                 user = User.objects.get(username=username)
 
-            # setting last online
             if user.check_password(password) is True:
                 user.last_online = timezone.now()
                 send_email_login(user)

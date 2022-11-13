@@ -1,6 +1,6 @@
 from telebot import TeleBot
 
-from typing import Callable, Union, Any
+from typing import Callable, Any, Optional
 
 from django.contrib.auth import authenticate
 
@@ -8,8 +8,8 @@ from ...models import TelegramUser
 
 
 class TelegramAuthentication:
-    bot: Union[TeleBot, None] = None
-    _function: Union[Callable, None] = None
+    bot: Optional[TeleBot] = None
+    _function: Optional[Callable] = None
 
     def __init__(self):
         self.auth = self.bot.message_handler(commands=['auth'])(self.auth)
@@ -34,23 +34,25 @@ class TelegramAuthentication:
         else:
             self._function(message, user, *args, **kwargs)
 
+    def auth(self, message: Any) -> None:
+        try:
+            self._auth_by_django(message)
+        except Exception:
+            self.bot.reply_to(message, self._auth_failed_msg)
+
     @staticmethod
     def _create_or_get_user(user_id: int) -> TelegramUser:
         obj, _ = TelegramUser.objects.get_or_create(telegram_id=user_id)
         return obj
 
-    def auth(self, message: Any) -> None:
-        try:
-            username, password = message.text.split()[1:]
+    def _auth_by_django(self, message: Any) -> None:
+        username, password = message.text.split()[1:]
+        user = authenticate(username=username, password=password)
 
-            user = authenticate(username=username, password=password)
-
-            if user is not None:
-                tg_user = self._create_or_get_user(message.from_user.id)
-                tg_user.account = user
-                tg_user.save()
-                self.bot.reply_to(message, self._auth_success_msg)
-            else:
-                raise Exception()
-        except Exception:
-            self.bot.reply_to(message, self._auth_failed_msg)
+        if user is not None:
+            tg_user = self._create_or_get_user(message.from_user.id)
+            tg_user.account = user
+            tg_user.save()
+            self.bot.reply_to(message, self._auth_success_msg)
+        else:
+            raise Exception()
