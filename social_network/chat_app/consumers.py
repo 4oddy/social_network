@@ -19,7 +19,7 @@ class BaseChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.user: str = self.scope['user']
         self.group_name: str = self.scope['url_route']['kwargs']['group_name']
-        self.group: AbstractDialog = await self._getter.get_group(self.group_name, None)
+        self.group: AbstractDialog = await self._getter.get_group(name=self.group_name, owner=None)
         self.group_uuid = str(self.group.uid)
 
         await self.channel_layer.group_add(
@@ -64,7 +64,7 @@ class ConservationConsumer(BaseChatConsumer):
 
 
 class DialogConsumer(BaseChatConsumer):
-    _getter: GetterConservations = GetterDialogs()
+    _getter: GetterDialogs = GetterDialogs()
     _saver: SaverConservationMessages = SaverDialogMessages()
     _sender: SenderMessages = SenderMessages(saver=_saver)
 

@@ -12,6 +12,7 @@ from .forms import CreateConservationForm
 User = get_user_model()
 
 getter_dialogs = GetterDialogs()
+getter_conservations = GetterConservations()
 
 
 class ConservationPage(LoginRequiredMixin, TemplateView):
@@ -68,8 +69,8 @@ class UserGroupsPage(LoginRequiredMixin, TemplateView):
 
         user = self.request.user
 
-        user_conservations = GetterConservations().get_user_groups(user)
-        user_dialogs = GetterDialogs().get_user_groups(user)
+        user_conservations = getter_conservations.get_user_groups(user)
+        user_dialogs = getter_dialogs.get_user_groups(user)
 
         context['conservations'] = user_conservations
         context['dialogs'] = user_dialogs

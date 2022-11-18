@@ -9,7 +9,6 @@ from django.contrib.auth import get_user_model
 from django.db.models import Q, QuerySet
 
 from .models import AbstractDialog, AbstractMessage, Conservation, ConservationMessage, Dialog, DialogMessage
-from .exceptions import SelfDialogCreated
 
 from core.utils import get_current_date
 
@@ -18,7 +17,7 @@ User = get_user_model()
 
 class AbstractGetter(ABC):
     @abstractmethod
-    async def get_group(self, name: str | User, owner: User) -> AbstractDialog:
+    async def get_group(self, *args, **kwargs) -> AbstractDialog:
         pass
 
     @abstractmethod
