@@ -45,7 +45,7 @@ class Conservation(AbstractDialog):
         verbose_name_plural = 'Беседы'
 
     def get_absolute_url(self):
-        return reverse('chat:conservation_page', kwargs={'group_name': self.name})
+        return reverse('chat:conservation_page', kwargs={'group_uuid': self.uid})
 
 
 class Dialog(AbstractDialog):

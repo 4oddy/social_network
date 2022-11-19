@@ -21,12 +21,12 @@ class ConservationPage(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data()
 
-        group_name = self.kwargs['group_name']
+        uid = self.kwargs['group_uuid']
 
-        conservation = get_object_or_404(Conservation, name=group_name)
+        conservation = get_object_or_404(Conservation, uid=uid)
 
         context['group_type'] = 'conservation'
-        context['group_name'] = group_name
+        context['group_name'] = uid
         context['conservation'] = conservation
         context['messages'] = ConservationMessage.objects.select_related('sender').filter(group=conservation)
 
