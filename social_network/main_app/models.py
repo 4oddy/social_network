@@ -142,6 +142,14 @@ class FriendRequest(models.Model):
                                                models.Q(from_user=second_user) & models.Q(to_user=first_user)).first()
         return request
 
+    @property
+    def is_accepted(self):
+        return self.request_status == self.RequestStatuses.ACCEPTED
+
+    @property
+    def is_denied(self):
+        return self.request_status == self.RequestStatuses.DENIED
+
 
 class Post(models.Model):
     title = models.CharField(verbose_name='Заголовок', max_length=50, null=True, blank=True)

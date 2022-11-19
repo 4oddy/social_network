@@ -104,14 +104,20 @@ class FriendRequestView(viewsets.GenericViewSet, mixins.CreateModelMixin, mixins
     @action(detail=True, methods=['GET'])
     def accept(self, request, pk=None):
         friend_request = self.get_object()
-        friend_request.accept()
-        return Response(status=status.HTTP_200_OK)
+
+        if not friend_request.is_accepted:
+            friend_request.accept()
+            return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST, data={'error': 'Заявка уже принята'})
 
     @action(detail=True, methods=['GET'])
     def deny(self, request, pk=None):
         friend_request = self.get_object()
-        friend_request.deny()
-        return Response(status=status.HTTP_200_OK)
+
+        if not friend_request.is_denied and not friend_request.is_accepted:
+            friend_request.deny()
+            return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST, data={'error': 'Заявка уже отклонена или принята'})
 
 
 class PostView(viewsets.ModelViewSet):
