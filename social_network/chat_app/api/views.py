@@ -6,7 +6,8 @@ from . import serializers
 from .. import services, models
 
 
-class BaseGroupView(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.RetrieveModelMixin):
+class BaseGroupView(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.RetrieveModelMixin,
+                    mixins.CreateModelMixin):
     permission_classes = [
         permissions.IsAuthenticated
     ]
@@ -50,7 +51,7 @@ class BaseGroupView(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.Retri
         return Response(serializer.data)
 
 
-class DialogView(BaseGroupView, mixins.CreateModelMixin):
+class DialogView(BaseGroupView):
     _getter = services.GetterDialogs()
 
     _message_model = models.DialogMessage
@@ -60,7 +61,7 @@ class DialogView(BaseGroupView, mixins.CreateModelMixin):
     _group_serializer = serializers.DialogSerializer
 
 
-class ConservationView(BaseGroupView, mixins.CreateModelMixin):
+class ConservationView(BaseGroupView):
     _getter = services.GetterConservations()
 
     _message_model = models.ConservationMessage
