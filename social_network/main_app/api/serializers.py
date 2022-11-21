@@ -2,8 +2,8 @@ from rest_framework import serializers
 
 from django.contrib.auth import get_user_model
 
-from main_app.models import FriendRequest, Post, Comment
-from main_app.services import create_friend_request
+from ..models import FriendRequest, Post, Comment
+from ..services import send_friend_request_email
 
 User = get_user_model()
 
@@ -35,7 +35,9 @@ class FriendRequestSerializer(serializers.ModelSerializer):
         read_only_fields = ('request_status', 'from_user')
 
     def create(self, validated_data):
-        request = create_friend_request(from_user=self.context['request'].user, to_user_id=validated_data['to_user'].id)
+        request = FriendRequest.objects.create(from_user=self.context['request'].user,
+                                               to_user=validated_data['to_user'])
+        send_friend_request_email(from_user=request.from_user, to_user=request.to_user)
         return request
 
     def validate(self, attrs):

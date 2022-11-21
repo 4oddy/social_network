@@ -193,7 +193,6 @@ class DeleteFriend(LoginRequiredMixin, View):
 
         if data['to_user_id']:
             user = get_object_or_404(User, pk=data['to_user_id'])
-
             delete_from_friendship(data['from_user'], user)
 
         return redirect(data['user_path'])

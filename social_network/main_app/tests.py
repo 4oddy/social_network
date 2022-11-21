@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 from core.utils import generate_user_data
 
 from .models import FriendRequest, Post
-from .services import create_friend_request, delete_from_friendship
+from .services import delete_from_friendship
 
 User = get_user_model()
 
@@ -49,46 +49,18 @@ class TestUser(TestCase):
         self.assertFalse(FriendRequest.find_friend_request(first_user=self.user, second_user=self.second_user))
         self.assertFalse(User.in_friendship(self.user, self.second_user))
 
-    def test_custom_friend_request(self):
-        request = create_friend_request(from_user=self.user, to_user_id=self.second_user.pk)
-        self.assertEqual(request.request_status, request.RequestStatuses.CREATED)
-
-        request.deny()
-        self.assertEqual(request.request_status, request.RequestStatuses.DENIED)
-
-        request.accept()
-        self.assertEqual(request.request_status, request.RequestStatuses.ACCEPTED)
-
-        self.assertTrue(User.in_friendship(self.user, self.second_user))
-
-        delete_from_friendship(self.user, self.second_user)
-        self.assertFalse(FriendRequest.find_friend_request(first_user=self.user, second_user=self.second_user))
-        self.assertFalse(User.in_friendship(self.user, self.second_user))
-
     def test_negative_self_friend_request(self):
-        try:
-            create_friend_request(from_user=self.user, to_user_id=self.user.id)
-        except Exception:
-            pass
-        else:
-            self.fail('Test Failed! Request has been created')
+        with self.assertRaises(Exception):
+            FriendRequest.objects.create(from_user=self.user, to_user=self.user)
 
     def test_negative_existing_friend_request(self):
-        create_friend_request(from_user=self.user, to_user_id=self.second_user.pk)
+        FriendRequest.objects.create(from_user=self.user, to_user=self.second_user)
 
-        try:
-            create_friend_request(from_user=self.user, to_user_id=self.second_user.pk)
-        except Exception:
-            pass
-        else:
-            self.fail('Test Failed! Request has been created')
+        with self.assertRaises(Exception):
+            FriendRequest.objects.create(from_user=self.user, to_user=self.second_user)
 
-        try:
-            create_friend_request(from_user=self.second_user, to_user_id=self.user.pk)
-        except Exception:
-            pass
-        else:
-            self.fail('Test Failed! Request has been created')
+        with self.assertRaises(Exception):
+            FriendRequest.objects.create(from_user=self.second_user, to_user=self.user)
 
 
 class TestPost(TestCase):
