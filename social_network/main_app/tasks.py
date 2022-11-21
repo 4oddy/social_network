@@ -11,14 +11,14 @@ sender_notifies = SenderNotifiesAggregator([EmailSenderNotifies(), TelegramSende
 
 
 @app.task
-def send_email(subject, body, to):
+def send_email(subject: str, body: str, to: int) -> None:
     """ Simple sending email """
     sender_notifies.send_notify(subject=subject, body=body, to=to)
 
 
 @app.task
-def send_password_reset_email(subject_template_name, email_template_name, context,
-                              from_email, to_email, html_email_template_name):
+def send_password_reset_email(subject_template_name: str, email_template_name: str, context: dict,
+                              from_email: str, to_email: str, html_email_template_name: str) -> None:
     """ Task to send password reset emails by Celery worker """
 
     context['user'] = User.objects.get(pk=context['user'])

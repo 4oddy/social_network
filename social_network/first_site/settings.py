@@ -4,6 +4,8 @@ from pathlib import Path
 import dotenv
 import os
 
+import logging
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -47,7 +49,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
-    'drf_yasg'
+    'drf_yasg',
 ]
 
 # REST Framework settings
@@ -92,7 +94,9 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+
     'corsheaders.middleware.CorsMiddleware',
+
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -126,7 +130,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
 
-                'core.context_processors.main.time'
+                'core.context_processors.main.time',
             ],
         },
     },
@@ -250,6 +254,33 @@ DEFAULT_EMAIL_SETTINGS_CHANGED_BODY = 'Здравствуйте, {name}\n\nКт�
 
 DEFAULT_EMAIL_FRIEND_REQUEST_SUBJECT = 'Новая заявка в друзья'
 DEFAULT_EMAIL_FRIEND_REQUEST_BODY = 'Здравствуйте, {name}\n\n{name_requested} отправил вам заявку в друзья\n\n{date}'
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'file_info_handler': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': 'logging/info/info.log',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file_info_handler'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+    },
+}
 
 
 if DEBUG:
