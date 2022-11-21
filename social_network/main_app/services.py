@@ -93,13 +93,6 @@ def send_email_changed_settings(user: User) -> None:
     send_email.delay(subject=settings.DEFAULT_EMAIL_SETTINGS_CHANGED_SUBJECT, body=email_body, to=user.id)
 
 
-def create_friend_request(from_user: User, to_user_id: int) -> FriendRequest:
-    request = FriendRequest.objects.create(from_user=from_user, to_user_id=to_user_id)
-    to_user = get_object_or_404(User, pk=to_user_id)
-    send_friend_request_email(from_user=from_user, to_user=to_user)
-    return request
-
-
 def delete_from_friendship(first: User, second: User) -> None:
     request = FriendRequest.find_friend_request(first_user=first, second_user=second)
 
