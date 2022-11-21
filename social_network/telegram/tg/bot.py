@@ -1,19 +1,7 @@
 from .setup import tg_bot as bot
 from .authentication.base import TelegramAuthentication
 
-TelegramAuthentication.set_bot(bot)
-
-auth_system = TelegramAuthentication()
-
-
-def hello(message):
-    bot.reply_to(message, 'Hello')
-
-
-@bot.message_handler(commands=['help'], func=hello)
-@auth_system.basic_authentication
-def welcome(message):
-    pass
+auth_system = TelegramAuthentication(bot=bot)
 
 
 @bot.message_handler(commands=['sending_notifies'])
