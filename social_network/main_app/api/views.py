@@ -47,15 +47,15 @@ class UserView(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateMode
         send_email_changed_settings(request.user)
         return Response(serializer.data)
 
-    @action(detail=False, methods=['GET'])
+    @action(detail=False, methods=['GET'], url_name='delete_profile_image')
     def delete_profile_image(self, request):
         if request.user.image != settings.DEFAULT_USER_IMAGE:
             request.user.image = settings.DEFAULT_USER_IMAGE
             request.user.save()
             return Response({'success': True})
-        return Response({'success': False})
+        return Response({'success': False}, status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=True, methods=['GET'])
+    @action(detail=True, methods=['GET'], url_name='friends')
     def friends(self, request, pk=None):
         serializer = self.get_serializer(self.get_object().friends.all(), many=True)
         return Response(serializer.data)
@@ -100,7 +100,7 @@ class FriendRequestView(viewsets.GenericViewSet, mixins.CreateModelMixin, mixins
             permission_classes.append(custom_permissions.CanAcceptOrDenyFriendRequest)
         return [permission() for permission in permission_classes]
 
-    @action(detail=True, methods=['GET'])
+    @action(detail=True, methods=['GET'], url_name='accept')
     def accept(self, request, pk=None):
         friend_request = self.get_object()
 
@@ -109,7 +109,7 @@ class FriendRequestView(viewsets.GenericViewSet, mixins.CreateModelMixin, mixins
             return Response(status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST, data={'error': 'Заявка уже принята'})
 
-    @action(detail=True, methods=['GET'])
+    @action(detail=True, methods=['GET'], url_name='deny')
     def deny(self, request, pk=None):
         friend_request = self.get_object()
 
