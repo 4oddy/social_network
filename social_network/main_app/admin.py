@@ -14,18 +14,18 @@ class CustomUserAdmin(UserAdmin):
     fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('username', 'email', 'first_name', 'last_name', 'image', 'friends', 'is_staff', 'is_active')}
+            'fields': ('username', 'email', 'first_name', 'last_name', 'is_staff', 'is_active')}
          ),
     )
 
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('username', 'email', 'first_name', 'last_name', 'image', 'friends', 'is_staff', 'is_active')}
+            'fields': ('username', 'email', 'first_name', 'last_name', 'is_staff', 'is_active')}
          ),
     )
 
-    list_display = ('id', 'username', 'first_name', 'last_name', 'email', 'image', 'password')
+    list_display = ('id', 'username', 'first_name', 'last_name', 'email', 'password')
 
 
 @admin.register(FriendRequest)
