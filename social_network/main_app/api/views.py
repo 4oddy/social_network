@@ -18,8 +18,7 @@ User = get_user_model()
 
 class UserView(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin):
     def get_queryset(self):
-        if self.request.user.is_authenticated:
-            return User.objects.all()
+        return User.objects.all()
 
     def get_object(self):
         if self.kwargs['pk'] == '0':
@@ -31,7 +30,7 @@ class UserView(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateMode
             permissions.AllowAny,
         ]
 
-        if self.action in ('update_user', 'delete_profile_image', 'friends', 'retrieve'):
+        if self.action in ('update_user', 'delete_profile_image', 'friends', 'retrieve', 'list'):
             permission_classes = [permissions.IsAuthenticated]
         return [permission() for permission in permission_classes]
 
@@ -40,7 +39,7 @@ class UserView(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateMode
             return serializers.UserUpdateSerializer
         return serializers.UserSerializer
 
-    @action(detail=False, methods=['PUT', 'PATCH'])
+    @action(detail=False, methods=['PUT', 'PATCH'], url_name='update_user')
     def update_user(self, request):
         serializer = self.get_serializer(instance=request.user, data=request.data)
         serializer.is_valid(raise_exception=True)

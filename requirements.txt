@@ -19,3 +19,4 @@ djangorestframework-simplejwt==5.2.1
 pyjwt==2.5.0
 drf-yasg==1.21.4
 pyTelegramBotAPI==4.7.0
+djet==0.3.0
