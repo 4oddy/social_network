@@ -1,9 +1,6 @@
-from django.shortcuts import reverse
 from django.contrib.auth import get_user_model
 
-from rest_framework import status
-
-from djet import assertions
+from .common import reverse, assertions, status
 
 from .base import BaseTestUser, generate_user_data
 

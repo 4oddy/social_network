@@ -1,15 +1,11 @@
-from django.shortcuts import reverse
-
-from rest_framework import status
-
-from djet.assertions import StatusCodeAssertionsMixin
-
 from PIL import Image
+
+from .common import reverse, assertions, status
 
 from .base import BaseTestUser
 
 
-class TestDetailUserAPI(BaseTestUser, StatusCodeAssertionsMixin):
+class TestDetailUserAPI(BaseTestUser, assertions.StatusCodeAssertionsMixin):
     def setUp(self):
         super(TestDetailUserAPI, self).setUp()
 
@@ -31,6 +27,7 @@ class TestDetailUserAPI(BaseTestUser, StatusCodeAssertionsMixin):
     def test_detail_myself(self):
         response = self.client_auth.get(self.build_url(0))
         self.assert_status_equal(response, status.HTTP_200_OK)
+        self.assertEqual(response.data['username'], self.user.username)
 
     def test_detail_not_found(self):
         response = self.client_auth.get(self.build_url(99))

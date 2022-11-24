@@ -14,7 +14,7 @@ def create_authenticated_api_client(user):
     return client
 
 
-class BaseTestUser(TestCase):
+class BaseTest(TestCase):
     def setUp(self):
         # creating main user
         self.user = User.objects.create_user(**generate_user_data())
@@ -23,3 +23,13 @@ class BaseTestUser(TestCase):
         self.second_user = User.objects.create_user(**generate_user_data())
 
         self.client_auth = create_authenticated_api_client(self.user)
+
+
+class BaseTestUser(BaseTest):
+    pass
+
+
+class BaseTestFriendRequest(BaseTest):
+    def setUp(self):
+        super(BaseTestFriendRequest, self).setUp()
+        self.third_user = User.objects.create_user(**generate_user_data())

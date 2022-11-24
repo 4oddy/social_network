@@ -73,7 +73,7 @@ class FriendRequestView(viewsets.GenericViewSet, mixins.CreateModelMixin, mixins
         serializer = self.serializer_class(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def destroy(self, request, *args, **kwargs):
         try:

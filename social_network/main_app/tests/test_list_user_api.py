@@ -1,13 +1,9 @@
-from django.shortcuts import reverse
-
-from rest_framework import status
-
-from djet.assertions import StatusCodeAssertionsMixin
+from .common import reverse, assertions, status
 
 from .base import BaseTestUser
 
 
-class TestListUserAPI(BaseTestUser, StatusCodeAssertionsMixin):
+class TestListUserAPI(BaseTestUser, assertions.StatusCodeAssertionsMixin):
     def setUp(self):
         super(TestListUserAPI, self).setUp()
         self.base_url = reverse('main:users-list')
