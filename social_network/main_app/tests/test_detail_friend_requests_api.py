@@ -52,7 +52,7 @@ class TestDetailFriendRequestAPI(BaseTestFriendRequest,
         request = FriendRequest.objects.create(from_user=self.second_user, to_user=self.user)
 
         response = self.client_auth.delete(self.build_url(request.pk))
-        self.assert_status_equal(response, status.HTTP_400_BAD_REQUEST)
+        self.assert_status_equal(response, status.HTTP_403_FORBIDDEN)
 
     def test_accept_friend_request(self):
         request = FriendRequest.objects.create(from_user=self.second_user, to_user=self.user)

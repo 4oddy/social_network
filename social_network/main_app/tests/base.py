@@ -5,6 +5,8 @@ from rest_framework.test import APIClient
 
 from core.utils import generate_user_data
 
+from ..models import Post
+
 User = get_user_model()
 
 
@@ -27,6 +29,12 @@ class BaseTest(TestCase):
 
 class BaseTestUser(BaseTest):
     pass
+
+
+class BaseTestPost(BaseTest):
+    @staticmethod
+    def create_post(owner, title='test', description=None):
+        return Post.objects.create(title=title, description=description, owner=owner)
 
 
 class BaseTestFriendRequest(BaseTest):

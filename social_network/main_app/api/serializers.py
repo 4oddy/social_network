@@ -3,7 +3,6 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 
 from ..models import FriendRequest, Post, Comment
-from ..services import send_friend_request_email
 
 User = get_user_model()
 
@@ -34,12 +33,6 @@ class FriendRequestSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ('request_status', 'from_user')
 
-    def create(self, validated_data):
-        request = FriendRequest.objects.create(from_user=self.context['request'].user,
-                                               to_user=validated_data['to_user'])
-        send_friend_request_email(from_user=request.from_user, to_user=request.to_user)
-        return request
-
     def validate(self, attrs):
         from_user = self.context['request'].user
         to_user = attrs['to_user']
@@ -59,6 +52,11 @@ class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = '__all__'
+
+    def validate(self, attrs):
+        if not attrs.get('title', None) and not attrs.get('description', None):
+            raise serializers.ValidationError('Пост не может быть пустым')
+        return super(PostSerializer, self).validate(attrs)
 
 
 class CommentSerializer(serializers.ModelSerializer):

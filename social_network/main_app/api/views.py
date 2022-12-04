@@ -10,6 +10,8 @@ from django.db.models import Q
 from . import serializers
 from . import permissions as custom_permissions
 
+from ..services import send_friend_request_email
+
 from main_app.models import FriendRequest, Post, Comment
 from main_app.services import delete_from_friendship, send_email_changed_settings
 
@@ -17,8 +19,7 @@ User = get_user_model()
 
 
 class UserView(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin):
-    def get_queryset(self):
-        return User.objects.all()
+    queryset = User.objects.all()
 
     def get_object(self):
         if self.kwargs['pk'] == '0':
@@ -65,15 +66,13 @@ class FriendRequestView(viewsets.GenericViewSet, mixins.CreateModelMixin, mixins
                         mixins.DestroyModelMixin, mixins.RetrieveModelMixin):
     serializer_class = serializers.FriendRequestSerializer
 
+    def perform_create(self, serializer):
+        obj = serializer.save(from_user=self.request.user)
+        send_friend_request_email(from_user=obj.from_user, to_user=obj.to_user)
+
     def get_queryset(self):
         queryset = FriendRequest.objects.filter(Q(from_user=self.request.user) | Q(to_user=self.request.user))
         return queryset
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data, context={'request': request})
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def destroy(self, request, *args, **kwargs):
         try:
@@ -85,7 +84,7 @@ class FriendRequestView(viewsets.GenericViewSet, mixins.CreateModelMixin, mixins
                 if request.user == instance.from_user:
                     self.perform_destroy(instance)
                 else:
-                    return Response(status=status.HTTP_400_BAD_REQUEST)
+                    return Response(status=status.HTTP_403_FORBIDDEN)
         except Exception:
             pass
 
@@ -137,29 +136,29 @@ class PostView(viewsets.ModelViewSet):
             permission_classes.append(custom_permissions.CanEditOrDeletePost)
         return [permission() for permission in permission_classes]
 
-    def get_queryset(self, **kwargs):
+    def get_queryset(self):
         if self.action == 'comments':
-            return Comment.objects.select_related('owner', 'post').filter(**kwargs)
+            return Comment.objects.select_related('owner', 'post').filter(post=self.kwargs['pk'])
         return Post.objects.select_related('owner').all()
 
-    @action(detail=False, methods=['GET'])
+    @action(detail=False, methods=['GET'], url_name='friends_posts')
     def friends_posts(self, request):
         serializer = self.get_serializer(self.get_queryset().friends_posts(request.user), many=True)
         return Response(serializer.data)
 
-    @action(detail=False, methods=['GET'])
+    @action(detail=False, methods=['GET'], url_name='user_posts')
     def user_posts(self, request):
         serializer = self.get_serializer(self.get_queryset().get_posts(request.user), many=True)
         return Response(serializer.data)
 
-    @action(detail=True, methods=['GET'])
+    @action(detail=True, methods=['GET'], url_name='comments')
     def comments(self, request, pk=None):
-        serializer = self.get_serializer(self.get_queryset(post=pk), many=True)
+        serializer = self.get_serializer(self.get_queryset(), many=True)
         return Response(serializer.data)
 
-    @action(detail=True, methods=['POST'])
+    @action(detail=True, methods=['POST'], url_name='leave_comment')
     def leave_comment(self, request, pk=None):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save(owner=request.user, post=self.get_object())
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
