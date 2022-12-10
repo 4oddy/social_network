@@ -25,7 +25,7 @@ class CreateFriendRequestTestAPI(BaseTestFriendRequest,
         self.assert_status_equal(response, status.HTTP_400_BAD_REQUEST)
 
     def test_create_existing_request(self):
-        FriendRequest.objects.create(from_user=self.user, to_user=self.second_user)
+        self.create_request(from_user=self.user, to_user=self.second_user)
 
         response = self.client_auth.post(self.base_url, data={'to_user': self.second_user.pk})
         self.assert_status_equal(response, status.HTTP_400_BAD_REQUEST)

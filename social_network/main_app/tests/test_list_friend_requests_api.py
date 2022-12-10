@@ -1,7 +1,6 @@
 from .common import reverse, assertions, status
 
 from .base import BaseTestFriendRequest
-from ..models import FriendRequest
 
 
 class TestListFriendRequestAPI(BaseTestFriendRequest, assertions.StatusCodeAssertionsMixin):
@@ -19,14 +18,14 @@ class TestListFriendRequestAPI(BaseTestFriendRequest, assertions.StatusCodeAsser
         self.assertEqual(len(response.data), 0)
 
     def test_list_authorized_one_request(self):
-        FriendRequest.objects.create(from_user=self.user, to_user=self.second_user)
+        self.create_request(from_user=self.user, to_user=self.second_user)
 
         response = self.client_auth.get(self.base_url)
         self.assert_status_equal(response, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
 
     def test_list_user_cannot_view_other_requests(self):
-        FriendRequest.objects.create(from_user=self.second_user, to_user=self.third_user)
+        self.create_request(from_user=self.second_user, to_user=self.third_user)
 
         response = self.client_auth.get(self.base_url)
         self.assert_status_equal(response, status.HTTP_200_OK)

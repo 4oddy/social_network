@@ -75,19 +75,15 @@ class FriendRequestView(viewsets.GenericViewSet, mixins.CreateModelMixin, mixins
         return queryset
 
     def destroy(self, request, *args, **kwargs):
-        try:
-            instance = self.get_object()
+        instance = self.get_object()
 
-            if instance.request_status == instance.RequestStatuses.ACCEPTED:
-                delete_from_friendship(first=instance.from_user, second=instance.to_user)
+        if instance.request_status == instance.RequestStatuses.ACCEPTED:
+            delete_from_friendship(first=instance.from_user, second=instance.to_user)
+        else:
+            if request.user == instance.from_user:
+                self.perform_destroy(instance)
             else:
-                if request.user == instance.from_user:
-                    self.perform_destroy(instance)
-                else:
-                    return Response(status=status.HTTP_403_FORBIDDEN)
-        except Exception:
-            pass
-
+                return Response(status=status.HTTP_403_FORBIDDEN)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     def get_permissions(self):
