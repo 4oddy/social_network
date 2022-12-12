@@ -36,7 +36,7 @@ class BaseGroupView(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.Retri
         serializer.save()
         return Response({'id': serializer.data['id'], 'success': True})
 
-    @action(detail=True, methods=['POST'])
+    @action(detail=True, methods=['POST'], url_name='send_message')
     def send_message(self, request, pk=None):
         group = self.get_object()
         serializer = self.get_serializer(data=request.data, context={'request': request, 'group': group})
@@ -44,7 +44,7 @@ class BaseGroupView(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.Retri
         serializer.save()
         return Response(data=serializer.data, status=status.HTTP_201_CREATED)
 
-    @action(detail=True, methods=['GET'])
+    @action(detail=True, methods=['GET'], url_name='group_messages')
     def group_messages(self, request, pk=None):
         group = self.get_object()
         serializer = self.get_serializer(self._message_model.objects.filter(group=group), many=True)

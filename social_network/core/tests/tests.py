@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 
 from rest_framework.test import APIClient
 
-from .utils import generate_user_data
+from core.utils import generate_user_data
 
 User = get_user_model()
 
