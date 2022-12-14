@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
-from django.core.mail import EmailMessage
 from django.contrib.auth import get_user_model
+from django.core.mail import EmailMessage
 
 from telegram.tg.bot import bot
 

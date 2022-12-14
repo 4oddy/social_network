@@ -1,15 +1,24 @@
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+Devices = User.Devices
+
+
 class DeviceExposerMiddleware:
+    """ Middleware to get user device """
     def __init__(self, get_response):
         self._get_response = get_response
 
     def __call__(self, request):
-        if request.user.is_authenticated:
+        user = request.user
+        if user.is_authenticated:
             if self._is_mobile(request):
-                request.user.device = request.user.Devices.MOBILE
+                user.device = Devices.MOBILE
             else:
-                request.user.device = request.user.Devices.PC
+                user.device = Devices.PC
 
-            request.user.save()
+            user.save(update_fields=['device'])
 
         response = self._get_response(request)
         return response

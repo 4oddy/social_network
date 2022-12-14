@@ -1,6 +1,6 @@
-from .base import BaseTestDialogs
+from core.tests.common import assertions, reverse, status
 
-from core.tests.common import status, reverse, assertions
+from .base import BaseTestDialogs
 
 
 class TestListDialogsAPI(BaseTestDialogs, assertions.StatusCodeAssertionsMixin):

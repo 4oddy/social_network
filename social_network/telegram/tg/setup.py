@@ -1,9 +1,8 @@
-from dotenv import load_dotenv
-
-from django.conf import settings
+import os
 
 import telebot
-import os
+from django.conf import settings
+from dotenv import load_dotenv
 
 load_dotenv(settings.BASE_DIR / 'test.env')
 

@@ -1,11 +1,10 @@
-from django.db import models
+import uuid
 
 from django.contrib.auth import get_user_model
-from django.shortcuts import reverse
-from django.http import HttpRequest
 from django.core.exceptions import ValidationError
-
-import uuid
+from django.db import models
+from django.http import HttpRequest
+from django.shortcuts import reverse
 
 from . import exceptions
 
@@ -68,14 +67,14 @@ class Dialog(AbstractDialog):
             )  # prohibits the same dialog
         ]
 
+    def __str__(self):
+        return f'{self.owner} - {self.second_user}'
+
     def clean(self):
         super().clean()
 
         if self.owner == self.second_user:
             raise ValidationError('Нельзя создать диалог с одним и тем же пользователем')
-
-    def __str__(self):
-        return f'{self.owner} - {self.second_user}'
 
     def get_companion(self, user: User = None) -> User:
         """ This method gets your companion

@@ -1,4 +1,4 @@
-from core.tests.common import reverse, status, assertions
+from core.tests.common import assertions, reverse, status
 
 from .base import BaseTestPost
 

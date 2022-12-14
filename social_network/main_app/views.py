@@ -1,21 +1,20 @@
-from django.shortcuts import render, redirect, get_object_or_404, reverse
 from django.conf import settings
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic.edit import CreateView, UpdateView, DeleteView
-from django.views.generic import View, DetailView, TemplateView
-from django.contrib.auth.views import LoginView
-from django.http import HttpResponseForbidden, HttpResponse, HttpResponseBadRequest
 from django.contrib.auth import get_user_model
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.views import LoginView
+from django.http import (HttpResponse, HttpResponseBadRequest,
+                         HttpResponseForbidden)
+from django.shortcuts import get_object_or_404, redirect, render, reverse
+from django.views.generic import DetailView, TemplateView, View
+from django.views.generic.edit import CreateView, DeleteView, UpdateView
 
-from .models import FriendRequest, Post, Comment
-
-from .forms import (CustomUserCreationForm, FindUserForm, CustomAuthenticationForm,
-                    UserSettingsForm, PostCreatingForm, PostEditingForm, CommentForm,
-                    FriendRequestForm)
-
-from .services import (find_users, get_data_for_action,
-                       get_username_from_kwargs, send_email_changed_settings,
-                       delete_from_friendship, get_request_info, get_user_for_view)
+from .forms import (CommentForm, CustomAuthenticationForm,
+                    CustomUserCreationForm, FindUserForm, FriendRequestForm,
+                    PostCreatingForm, PostEditingForm, UserSettingsForm)
+from .models import Comment, FriendRequest, Post
+from .services import (delete_from_friendship, find_users, get_data_for_action,
+                       get_request_info, get_user_for_view,
+                       get_username_from_kwargs, send_email_changed_settings)
 
 User = get_user_model()
 

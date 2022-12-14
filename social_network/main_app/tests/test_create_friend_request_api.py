@@ -1,7 +1,7 @@
 from core.tests.common import assertions, reverse, status
 
-from .base import BaseTestFriendRequest
 from ..models import FriendRequest
+from .base import BaseTestFriendRequest
 
 
 class CreateFriendRequestTestAPI(BaseTestFriendRequest,

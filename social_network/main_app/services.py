@@ -1,21 +1,21 @@
-from django.db.models import QuerySet
-from django.contrib.auth import get_user_model
+from typing import Callable
+
 from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.db.models import QuerySet
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 
-from typing import Callable
+from core.utils import get_current_date
 
 from .models import FriendRequest
 from .tasks import send_email
-
-from core.utils import get_current_date
-
 
 User = get_user_model()
 
 
 def send_emails(function: Callable) -> Callable:
+    """ Useful decorator to execute function if it is settings.SEND_EMAILS """
     def wrapper(*args, **kwargs) -> None:
         if settings.SEND_EMAILS:
             function(*args, **kwargs)
@@ -28,6 +28,7 @@ def find_users(username: str) -> QuerySet:
 
 
 def get_request_info(first_user: User, second_user: User) -> dict:
+    """ Function to get all info about friend request """
     info = dict()
 
     request = FriendRequest.objects.filter(from_user=first_user, to_user=second_user).first()
@@ -66,11 +67,13 @@ def get_data_for_action(request: HttpRequest) -> dict:
 
 
 def get_username_from_kwargs(kwargs: dict) -> str:
+    """ Get username from URL """
     return kwargs['username'].replace('@', '')
 
 
 @send_emails
 def send_friend_request_email(from_user: User, to_user: User) -> None:
+    """ Function to send notification about new friend request """
     email_body = settings.DEFAULT_EMAIL_FRIEND_REQUEST_BODY.format(name=to_user.get_name(),
                                                                    name_requested=from_user.username,
                                                                    date=get_current_date())
@@ -80,6 +83,7 @@ def send_friend_request_email(from_user: User, to_user: User) -> None:
 
 @send_emails
 def send_email_login(user: User) -> None:
+    """ Function to send notification about new log in """
     name = user.get_name()
     username = user.username
     email_body = settings.DEFAULT_EMAIL_LOGIN_BODY.format(name=name, username=username, date=get_current_date())
@@ -88,12 +92,14 @@ def send_email_login(user: User) -> None:
 
 @send_emails
 def send_email_changed_settings(user: User) -> None:
+    """ Function to send notification about changing settings of profile """
     name = user.get_name()
     email_body = settings.DEFAULT_EMAIL_SETTINGS_CHANGED_BODY.format(name=name, date=get_current_date())
     send_email.delay(subject=settings.DEFAULT_EMAIL_SETTINGS_CHANGED_SUBJECT, body=email_body, to=user.id)
 
 
 def delete_from_friendship(first: User, second: User) -> None:
+    """ Function deletes from friendship and related friend request """
     request = FriendRequest.find_friend_request(first_user=first, second_user=second)
 
     if request:

@@ -1,17 +1,16 @@
-from django.db import models
+import uuid
 
 from django.conf import settings
-from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.exceptions import ValidationError
-from django.utils import timezone
 from django.core.validators import EmailValidator
+from django.db import models
 from django.shortcuts import reverse
+from django.utils import timezone
 
-from .validators import custom_username_validator
 from .managers import PostManager
-
-import uuid
+from .validators import custom_username_validator
 
 
 class CustomUser(AbstractUser):
@@ -58,7 +57,7 @@ class CustomUser(AbstractUser):
     @property
     def is_online(self):
         if self.last_online:
-            return (timezone.now() - self.last_online) < timezone.timedelta(minutes=2)
+            return (timezone.now() - self.last_online) < timezone.timedelta(minutes=2)  # online lasts for 2 minutes
         return False
 
     @property
@@ -90,12 +89,12 @@ class FriendRequest(models.Model):
         ACCEPTED = 'a', 'ACCEPTED'
         DENIED = 'd', 'DENIED'
 
-    from_user = models.ForeignKey(CustomUser, null=False, verbose_name='От кого', related_name='from_user_request',
-                                  on_delete=models.CASCADE)
-    to_user = models.ForeignKey(CustomUser, null=False, verbose_name='Кому', related_name='to_user_request',
-                                on_delete=models.CASCADE)
-    request_status = models.CharField(verbose_name='Статус заявки', max_length=1, choices=RequestStatuses.choices,
-                                      default=RequestStatuses.CREATED)
+    from_user = models.ForeignKey(CustomUser, null=False, verbose_name='От кого',
+                                  related_name='from_user_request', on_delete=models.CASCADE)
+    to_user = models.ForeignKey(CustomUser, null=False, verbose_name='Кому',
+                                related_name='to_user_request', on_delete=models.CASCADE)
+    request_status = models.CharField(verbose_name='Статус заявки', max_length=1,
+                                      choices=RequestStatuses.choices, default=RequestStatuses.CREATED)
     date_of_request = models.DateTimeField(verbose_name='Дата заявки', auto_now_add=True)
 
     class Meta:
@@ -123,6 +122,7 @@ class FriendRequest(models.Model):
             raise ValidationError('Такая заявка уже существует')
 
     def accept(self):
+        """ Accepts friend request and makes friends """
         if self.request_status != self.RequestStatuses.ACCEPTED:
             first_user, second_user = self.from_user, self.to_user
 
@@ -132,12 +132,14 @@ class FriendRequest(models.Model):
             self.save()
 
     def deny(self):
+        """ Denies friend request """
         if self.request_status != self.RequestStatuses.DENIED and self.request_status != self.RequestStatuses.ACCEPTED:
             self.request_status = self.RequestStatuses.DENIED
             self.save()
 
     @staticmethod
     def find_friend_request(first_user, second_user):
+        """ Find friend request related to first_user and second_user """
         request = FriendRequest.objects.filter(models.Q(from_user=first_user) & models.Q(to_user=second_user) |
                                                models.Q(from_user=second_user) & models.Q(to_user=first_user)).first()
         return request
@@ -167,12 +169,12 @@ class Post(models.Model):
         verbose_name_plural = 'Записи'
         ordering = ['-date_of_creating']
 
+    def get_absolute_url(self):
+        return reverse('main:post_page', kwargs={'post_uuid': self.post_uuid})
+
     def clean(self):
         if not self.title and not self.description:
             raise ValidationError('Пост не может быть пустым')
-
-    def get_absolute_url(self):
-        return reverse('main:post_page', kwargs={'post_uuid': self.post_uuid})
 
 
 class Comment(models.Model):

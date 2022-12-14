@@ -1,7 +1,6 @@
+from captcha.fields import CaptchaField
 from django import forms
 from django.conf import settings
-
-from captcha.fields import CaptchaField
 
 captcha_text = 'Подтвердите, что вы не робот'
 

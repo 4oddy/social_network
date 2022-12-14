@@ -1,5 +1,5 @@
-from .setup import tg_bot as bot
 from .authentication.base import TelegramAuthentication
+from .setup import tg_bot as bot
 
 auth_system = TelegramAuthentication(bot=bot)
 

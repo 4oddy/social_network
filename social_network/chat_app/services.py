@@ -1,16 +1,15 @@
 from abc import ABC, abstractmethod
 
-from asgiref.sync import sync_to_async, async_to_sync
+from asgiref.sync import sync_to_async
 from channels.layers import get_channel_layer
-from django.forms import model_to_dict
-
-from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
 from django.db.models import Q, QuerySet
-
-from .models import AbstractDialog, AbstractMessage, Conservation, ConservationMessage, Dialog, DialogMessage
+from django.shortcuts import get_object_or_404
 
 from core.utils import get_current_date
+
+from .models import (AbstractDialog, AbstractMessage, Conservation,
+                     ConservationMessage, Dialog, DialogMessage)
 
 User = get_user_model()
 
@@ -31,6 +30,24 @@ class AbstractSaver(ABC):
         pass
 
 
+class AbstractCreatorGroups(ABC):
+    @abstractmethod
+    def create_group(self, **kwargs):
+        pass
+
+
+class CreatorConservations(AbstractCreatorGroups):
+    @staticmethod
+    def create_group(**kwargs) -> Conservation:
+        return Conservation.objects.create(**kwargs)
+
+
+class CreatorDialogs(AbstractCreatorGroups):
+    @staticmethod
+    def create_group(owner: User, second_user: User) -> Dialog:
+        return Dialog.objects.create(owner=owner, name=second_user.username, second_user=second_user)
+
+
 class GetterConservations(AbstractGetter):
     """ Class to manage logic of getting conservations """
 
@@ -45,25 +62,18 @@ class GetterConservations(AbstractGetter):
 
 class GetterDialogs(AbstractGetter):
     """ Class to manage logic of getting dialogs"""
-
-    @sync_to_async
-    def get_group(self, user: User, companion: User | None = None, companion_username: str | None = None) -> Dialog:
+    @staticmethod
+    def get_group_sync(user: User,
+                       companion: User | None = None,
+                       companion_username: str | None = None) -> Dialog | None:
         if companion:
             dialog = Dialog.objects.select_related('owner', 'second_user').filter(
                 Q(owner=user) & Q(name=companion.username) & Q(second_user=companion) |
                 Q(owner=companion) & Q(name=user.username) & Q(second_user=user)).first()
-
-            if dialog is None:
-                dialog = Dialog.objects.create(name=companion.username, owner=user, second_user=companion)
-
         elif companion_username:
             dialog = Dialog.objects.select_related('owner', 'second_user').filter(
                 Q(owner=user) & Q(name=companion_username) & Q(second_user__username=companion_username) |
                 Q(owner__username=companion_username) & Q(name=user.username) & Q(second_user=user)).first()
-
-            if dialog is None:
-                second_user = get_object_or_404(User, username=companion_username)
-                dialog = Dialog.objects.create(name=companion_username, owner=user, second_user=second_user)
         else:
             raise TypeError('You have to define companion or companion_username')
 
@@ -73,7 +83,7 @@ class GetterDialogs(AbstractGetter):
         dialogs = Dialog.objects.select_related('owner', 'second_user').filter(Q(owner=user) | Q(second_user=user))
         return dialogs
 
-    get_group_sync = async_to_sync(get_group)
+    get_group = staticmethod(sync_to_async(get_group_sync))
 
 
 class SaverConservationMessages(AbstractSaver):
@@ -98,19 +108,20 @@ class SenderMessages:
     """ Class to manage logic of sending messages """
 
     def __init__(self, saver: AbstractSaver):
-        self._saver: AbstractSaver = saver
+        self._saver = saver
         self._channel_layer = get_channel_layer()
 
     async def send_message(self, sender: User, message: str, group: AbstractDialog) -> AbstractMessage:
-        sender_dict: dict = await sync_to_async(model_to_dict)(sender, fields=('username',))
-        sender_dict['image_url'] = sender.image.url
-        sender_dict['profile_url'] = sender.get_absolute_url()
+        sender_dict = {
+            'username': sender.username,
+            'image_url': sender.image.url,
+            'profile_url': sender.get_absolute_url(),
+            'date': get_current_date()
+        }
 
         group_uuid = str(group.uid)
 
         message_instance = await self._saver.save_message(user=sender, message=message, group=group)
-
-        sender_dict['date'] = get_current_date()
 
         await self._channel_layer.group_send(
             group_uuid,

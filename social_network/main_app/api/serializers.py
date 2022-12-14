@@ -1,8 +1,7 @@
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from django.contrib.auth import get_user_model
-
-from ..models import FriendRequest, Post, Comment
+from ..models import Comment, FriendRequest, Post
 
 User = get_user_model()
 

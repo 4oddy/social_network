@@ -1,8 +1,6 @@
-from rest_framework import serializers
-
-from django.contrib.auth import get_user_model
-
 from asgiref.sync import async_to_sync
+from django.contrib.auth import get_user_model
+from rest_framework import serializers
 
 from main_app.api.serializers import UserSerializer
 
@@ -27,6 +25,21 @@ class DialogSerializer(BaseGroupSerializer):
         model = models.Dialog
         read_only_fields = ('name', )
 
+    def create(self, validated_data):
+        owner = self.context['request'].user
+        second_user = validated_data['second_user_id']
+        dialog = services.CreatorDialogs.create_group(owner=owner, second_user=second_user)
+        return dialog
+
+    def validate(self, attrs):
+        owner = self.context['request'].user
+        second_user = attrs.get('second_user_id')
+
+        if services.GetterDialogs.get_group_sync(user=owner, companion=second_user):
+            raise serializers.ValidationError('Диалог уже существует')
+
+        return super().validate(attrs)
+
     def validate_second_user_id(self, value):
         user = self.context['request'].user
 
@@ -36,11 +49,6 @@ class DialogSerializer(BaseGroupSerializer):
         if value not in user.friends.all():
             raise serializers.ValidationError('Не в друзьях')
         return value
-
-    def create(self, validated_data):
-        dialog = services.GetterDialogs().get_group_sync(user=self.context['request'].user,
-                                                         companion=validated_data['second_user_id'])
-        return dialog
 
 
 class ConservationSerializer(BaseGroupSerializer):
@@ -60,7 +68,7 @@ class ConservationSerializer(BaseGroupSerializer):
     def create(self, validated_data):
         owner = self.context['request'].user
         members = validated_data['members_id']
-        conservation = models.Conservation.objects.create(owner=owner, name=validated_data['name'])
+        conservation = services.CreatorConservations.create_group(owner=owner, name=validated_data['name'])
 
         if owner not in members:
             members.append(owner)

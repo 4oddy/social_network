@@ -1,12 +1,13 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, UsernameField, PasswordResetForm
-
-from .models import CustomUser, Post, Comment, FriendRequest
-from .services import send_friend_request_email
-from .validators import custom_username_validator
-from .tasks import send_password_reset_email
+from django.contrib.auth.forms import (AuthenticationForm, PasswordResetForm,
+                                       UserCreationForm, UsernameField)
 
 from core.forms import BaseForm
+
+from .models import Comment, CustomUser, FriendRequest, Post
+from .services import send_friend_request_email
+from .tasks import send_password_reset_email
+from .validators import custom_username_validator
 
 
 class FindUserForm(forms.Form):

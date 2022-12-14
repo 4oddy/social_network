@@ -1,15 +1,16 @@
-from django.urls import path, reverse_lazy, include
-from django.contrib.auth.views import LogoutView, PasswordResetView, PasswordResetConfirmView, PasswordResetDoneView
-
-from .views import (UserProfilePage, MainPage, RegisterUserPage,
-                    FindUserPage, CreateFriendRequest, CancelFriendRequest,
-                    AcceptFriendRequest, DenyFriendRequest, DeleteFriend,
-                    FriendsListPage, CustomLoginPage, UserSettingsPage, CreatePost,
-                    PostPage, DeletePostPage, EditPostPage, DeleteProfileImage, CreateComment)
-
-from .forms import CustomPasswordResetForm
+from django.contrib.auth.views import (LogoutView, PasswordResetConfirmView,
+                                       PasswordResetDoneView,
+                                       PasswordResetView)
+from django.urls import include, path, reverse_lazy
 
 from .api import routers
+from .forms import CustomPasswordResetForm
+from .views import (AcceptFriendRequest, CancelFriendRequest, CreateComment,
+                    CreateFriendRequest, CreatePost, CustomLoginPage,
+                    DeleteFriend, DeletePostPage, DeleteProfileImage,
+                    DenyFriendRequest, EditPostPage, FindUserPage,
+                    FriendsListPage, MainPage, PostPage, RegisterUserPage,
+                    UserProfilePage, UserSettingsPage)
 
 app_name = 'main'
 
@@ -25,20 +26,23 @@ urlpatterns = [
     path('accounts/register/', RegisterUserPage.as_view(), name='register_page'),
     path('accounts/settings/', UserSettingsPage.as_view(), name='user_settings_page'),
     path('accounts/delete_user_image/', DeleteProfileImage.as_view(), name='delete_user_image'),
-    path('accounts/change_password/', PasswordResetView.as_view(template_name='password/change_password.html',
-                                                                email_template_name=
-                                                                'password/password_reset_email.html',
-                                                                subject_template_name=
-                                                                'password/password_reset_subject.txt',
-                                                                form_class=CustomPasswordResetForm,
-                                                                success_url=reverse_lazy('main:password_reset_done')),
+    path('accounts/change_password/',
+         PasswordResetView.as_view(template_name='password/change_password.html',
+                                   email_template_name=
+                                   'password/password_reset_email.html',
+                                   subject_template_name=
+                                   'password/password_reset_subject.txt',
+                                   form_class=CustomPasswordResetForm,
+                                   success_url=reverse_lazy('main:password_reset_done')),
          name='change_password_page'),
 
     path('accounts/password_reset_done/',
-         PasswordResetDoneView.as_view(template_name='password/password_reset_done.html'), name='password_reset_done'),
+         PasswordResetDoneView.as_view(template_name='password/password_reset_done.html'),
+         name='password_reset_done'),
 
     path('accounts/password_reset_confirm/<uidb64>/<token>/',
-         PasswordResetConfirmView.as_view(success_url='/', template_name='password/password_reset.html'),
+         PasswordResetConfirmView.as_view(success_url='/',
+                                          template_name='password/password_reset.html'),
          name='password_reset_confirm'),
 
     path('actions/add_friend/', CreateFriendRequest.as_view(), name='create_friend_request'),

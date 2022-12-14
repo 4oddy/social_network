@@ -1,6 +1,6 @@
 from PIL import Image
 
-from core.tests.common import reverse, assertions, status
+from core.tests.common import assertions, reverse, status
 
 from .base import BaseTestUser
 

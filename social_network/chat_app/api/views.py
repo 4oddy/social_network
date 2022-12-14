@@ -1,9 +1,9 @@
-from rest_framework import viewsets, mixins, permissions, status
-from rest_framework.response import Response
+from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.response import Response
 
+from .. import models, services
 from . import serializers
-from .. import services, models
 
 
 class BaseGroupView(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.RetrieveModelMixin,

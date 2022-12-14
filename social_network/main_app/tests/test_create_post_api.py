@@ -1,8 +1,7 @@
-from core.tests.common import reverse, status, assertions
-
-from .base import BaseTestPost
+from core.tests.common import assertions, reverse, status
 
 from ..models import Post
+from .base import BaseTestPost
 
 
 class TestCreatePostAPI(BaseTestPost,

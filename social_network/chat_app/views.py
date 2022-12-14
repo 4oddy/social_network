@@ -1,13 +1,12 @@
-from django.http import HttpResponseBadRequest, HttpResponseForbidden
-from django.shortcuts import get_object_or_404, render, reverse, redirect
-from django.views.generic import TemplateView, View, CreateView
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import get_user_model
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import HttpResponseBadRequest, HttpResponseForbidden
+from django.shortcuts import get_object_or_404, redirect, render, reverse
+from django.views.generic import CreateView, TemplateView, View
 
-from .models import ConservationMessage, Conservation, DialogMessage
-from .services import GetterDialogs, GetterConservations
 from .forms import CreateConservationForm
-
+from .models import Conservation, ConservationMessage, DialogMessage
+from .services import CreatorDialogs, GetterConservations, GetterDialogs
 
 User = get_user_model()
 
@@ -54,6 +53,8 @@ class DialogPage(LoginRequiredMixin, View):
 
         if User.in_friendship(self.request.user, second_user):
             dialog = getter_dialogs.get_group_sync(user=self.request.user, companion=second_user)
+            if not dialog:
+                dialog = CreatorDialogs.create_group(owner=self.request.user, second_user=second_user)
             context['dialog'] = dialog
             context['companion'] = dialog.get_companion(user=self.request.user)
             context['messages'] = DialogMessage.objects.select_related('sender').filter(group=dialog)
@@ -74,7 +75,6 @@ class UserGroupsPage(LoginRequiredMixin, TemplateView):
 
         context['conservations'] = user_conservations
         context['dialogs'] = user_dialogs
-
         return context
 
 

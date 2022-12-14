@@ -1,8 +1,7 @@
-from telebot import TeleBot
-
-from typing import Callable, Any, Optional
+from typing import Any, Callable, Optional
 
 from django.contrib.auth import authenticate
+from telebot import TeleBot
 
 from ...models import TelegramUser
 

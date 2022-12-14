@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 
-from core.tests.common import reverse, assertions, status
+from core.tests.common import assertions, reverse, status
 
 from .base import BaseTestUser, generate_user_data
 

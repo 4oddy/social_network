@@ -1,9 +1,9 @@
-from first_site.celery_app import app
-
-from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth import get_user_model
+from django.contrib.auth.forms import PasswordResetForm
 
-from core.email.services import EmailSenderNotifies, TelegramSenderNotifies, SenderNotifiesAggregator
+from core.email.services import (EmailSenderNotifies, SenderNotifiesAggregator,
+                                 TelegramSenderNotifies)
+from first_site.celery_app import app
 
 User = get_user_model()
 

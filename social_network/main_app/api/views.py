@@ -1,19 +1,18 @@
-from rest_framework import viewsets, mixins, permissions, status
-from rest_framework.response import Response
-from rest_framework.decorators import action
-
-from django.contrib.auth import get_user_model
 from django.conf import settings
-from django.shortcuts import get_object_or_404
+from django.contrib.auth import get_user_model
 from django.db.models import Q
+from django.shortcuts import get_object_or_404
+from rest_framework import mixins, permissions, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
-from . import serializers
-from . import permissions as custom_permissions
+from main_app.models import Comment, FriendRequest, Post
+from main_app.services import (delete_from_friendship,
+                               send_email_changed_settings)
 
 from ..services import send_friend_request_email
-
-from main_app.models import FriendRequest, Post, Comment
-from main_app.services import delete_from_friendship, send_email_changed_settings
+from . import permissions as custom_permissions
+from . import serializers
 
 User = get_user_model()
 

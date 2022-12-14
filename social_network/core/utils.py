@@ -1,8 +1,7 @@
 from datetime import datetime
+from uuid import uuid4
 
 from django.contrib.auth import get_user_model
-
-from uuid import uuid4
 
 User = get_user_model()
 

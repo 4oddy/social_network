@@ -1,9 +1,9 @@
 from django.contrib.auth import get_user_model
 
-from core.utils import generate_user_data
 from core.tests.tests import BaseTest
+from core.utils import generate_user_data
 
-from ..models import Dialog, Conservation
+from ..models import Conservation, Dialog
 
 User = get_user_model()
 

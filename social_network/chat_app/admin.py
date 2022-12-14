@@ -1,6 +1,7 @@
 from django.contrib import admin
 
-from .models import AbstractMessage, AbstractDialog, Conservation, ConservationMessage, Dialog, DialogMessage
+from .models import (AbstractDialog, AbstractMessage, Conservation,
+                     ConservationMessage, Dialog, DialogMessage)
 
 
 class BaseMessageAdmin(admin.ModelAdmin):

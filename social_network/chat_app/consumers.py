@@ -3,10 +3,10 @@ import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from django.contrib.auth import get_user_model
 
-from .services import (AbstractGetter, AbstractSaver, GetterConservations, GetterDialogs,
-                       SaverDialogMessages, SaverConservationMessages, SenderMessages)
-
 from .models import AbstractDialog, Dialog
+from .services import (AbstractGetter, AbstractSaver, GetterConservations,
+                       GetterDialogs, SaverConservationMessages,
+                       SaverDialogMessages, SenderMessages)
 
 User = get_user_model()
 

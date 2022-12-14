@@ -1,9 +1,8 @@
-from django.urls import path, include
-
-from .views import ConservationPage, DialogPage, UserGroupsPage, CreateConservationPage
+from django.urls import include, path
 
 from .api import routers
-
+from .views import (ConservationPage, CreateConservationPage, DialogPage,
+                    UserGroupsPage)
 
 app_name = 'chat'
 

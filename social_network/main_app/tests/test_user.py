@@ -1,9 +1,8 @@
 from django.shortcuts import reverse
 
-from .base import BaseTestUser, User
-
 from ..models import FriendRequest
 from ..services import delete_from_friendship
+from .base import BaseTestUser, User
 
 
 class TestUser(BaseTestUser):
