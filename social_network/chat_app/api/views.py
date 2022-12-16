@@ -34,7 +34,7 @@ class BaseGroupView(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.Retri
         serializer = self.get_serializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response({'id': serializer.data['id'], 'success': True})
+        return Response({'id': serializer.data['id'], 'success': True}, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=['POST'], url_name='send_message')
     def send_message(self, request, pk=None):

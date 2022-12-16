@@ -51,7 +51,7 @@ class TestDetailDialogsAPI(BaseTestDialogs,
         self.assertEqual(len(response.json()), 0)
 
     def test_group_message_exists(self):
-        DialogMessage.objects.create(sender=self.user, text='test', group=self.dialog)
+        self.send_message(sender=self.user, text='test', group=self.dialog)
 
         response = self.client_auth.get(self.build_group_messages_url(self.dialog.pk))
         self.assert_status_equal(response, status.HTTP_200_OK)

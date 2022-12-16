@@ -39,7 +39,15 @@ class AbstractCreatorGroups(ABC):
 class CreatorConservations(AbstractCreatorGroups):
     @staticmethod
     def create_group(**kwargs) -> Conservation:
-        return Conservation.objects.create(**kwargs)
+        owner = kwargs.get('owner')
+
+        if members := kwargs.pop('members', None):
+            if owner not in members:
+                members.append(owner)
+
+        conservation = Conservation.objects.create(**kwargs)
+        conservation.members.set(members)
+        return conservation
 
 
 class CreatorDialogs(AbstractCreatorGroups):
@@ -66,6 +74,7 @@ class GetterDialogs(AbstractGetter):
     def get_group_sync(user: User,
                        companion: User | None = None,
                        companion_username: str | None = None) -> Dialog | None:
+        # search by companion id or username
         if companion:
             dialog = Dialog.objects.select_related('owner', 'second_user').filter(
                 Q(owner=user) & Q(name=companion.username) & Q(second_user=companion) |

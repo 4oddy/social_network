@@ -68,12 +68,9 @@ class ConservationSerializer(BaseGroupSerializer):
     def create(self, validated_data):
         owner = self.context['request'].user
         members = validated_data['members_id']
-        conservation = services.CreatorConservations.create_group(owner=owner, name=validated_data['name'])
-
-        if owner not in members:
-            members.append(owner)
-
-        conservation.members.set(members)
+        conservation = services.CreatorConservations.create_group(owner=owner,
+                                                                  name=validated_data['name'],
+                                                                  members=members)
         return conservation
 
 

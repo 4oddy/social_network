@@ -56,8 +56,11 @@ class CustomUser(AbstractUser):
 
     @property
     def is_online(self):
+        """ Property to know is the user online
+            lasts for 2 minutes after latest visit
+        """
         if self.last_online:
-            return (timezone.now() - self.last_online) < timezone.timedelta(minutes=2)  # online lasts for 2 minutes
+            return (timezone.now() - self.last_online) < timezone.timedelta(minutes=2)
         return False
 
     @property

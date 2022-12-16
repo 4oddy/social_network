@@ -12,6 +12,7 @@ class CustomBackend(BaseBackend):
     def get_user(self, user_id):
         try:
             user = User.objects.get(pk=user_id)
+            # setting last online
             user.save(update_fields=['last_online'])
             return user
         except User.DoesNotExist:
@@ -30,6 +31,7 @@ class CustomBackend(BaseBackend):
                 user = User.objects.get(username=username)
 
             if user.check_password(password) is True:
+                # setting last online
                 user.last_online = timezone.now()
                 send_email_login(user)
                 return user
