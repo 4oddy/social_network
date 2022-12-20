@@ -3,8 +3,7 @@ from django.contrib.auth import get_user_model
 from core.tests.tests import BaseTest
 from core.utils import generate_user_data
 
-from ..models import (Conservation, Dialog,
-                      DialogMessage, ConservationMessage)
+from ..models import Conservation, ConservationMessage, Dialog, DialogMessage
 
 User = get_user_model()
 

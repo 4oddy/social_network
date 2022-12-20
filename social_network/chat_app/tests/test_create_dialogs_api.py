@@ -1,7 +1,7 @@
 from core.tests.common import assertions, reverse, status
 
-from .base import BaseTestDialogs
 from ..models import Dialog
+from .base import BaseTestDialogs
 
 
 class TestCreateDialogsAPI(BaseTestDialogs,

@@ -6,8 +6,6 @@ from django.db import models
 from django.http import HttpRequest
 from django.shortcuts import reverse
 
-from . import exceptions
-
 User = get_user_model()
 
 exposed_request: HttpRequest = HttpRequest()
@@ -73,6 +71,9 @@ class Dialog(AbstractDialog):
     def clean(self):
         super().clean()
 
+        if not User.in_friendship(self.owner, self.second_user):
+            raise ValidationError(f'Не в друзьях с {self.second_user}')
+
         if self.owner == self.second_user:
             raise ValidationError('Нельзя создать диалог с одним и тем же пользователем')
 
@@ -100,13 +101,6 @@ class ConservationMessage(AbstractMessage):
         verbose_name_plural = 'Сообщения беседы'
         ordering = ['date_of_sending']
 
-    def save(
-        self, force_insert=False, force_update=False, using=None, update_fields=None
-    ):
-        if self.sender not in self.group.members.all():
-            raise exceptions.UserNotInConservation('Отправитель не находится в этой беседе')
-        return super().save(force_insert, force_update, using, update_fields)
-
 
 class DialogMessage(AbstractMessage):
     group = models.ForeignKey(Dialog, verbose_name='Диалог', on_delete=models.CASCADE,
@@ -116,10 +110,3 @@ class DialogMessage(AbstractMessage):
         verbose_name = 'Сообщение диалога'
         verbose_name_plural = 'Сообщения диалога'
         ordering = ['date_of_sending']
-
-    def save(
-        self, force_insert=False, force_update=False, using=None, update_fields=None
-    ):
-        if self.sender != self.group.owner and self.sender != self.group.second_user:
-            raise exceptions.UserNotInDialog('Отправитель не находится в этом диалоге')
-        return super().save(force_insert, force_update, using, update_fields)

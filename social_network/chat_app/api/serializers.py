@@ -60,9 +60,14 @@ class ConservationSerializer(BaseGroupSerializer):
 
     def validate_members_id(self, value):
         user = self.context['request'].user
-        check = all([val in user.friends.all() for val in value if val != user])
-        if not check:
-            raise serializers.ValidationError('Не в друзьях')
+
+        not_in_friends = list(map(
+            lambda friend: friend.username,
+            filter(lambda friend: friend not in user.friends.all() and friend != user, value))
+        )
+
+        if any(not_in_friends):
+            raise serializers.ValidationError({'not_in_friends': not_in_friends})
         return value
 
     def create(self, validated_data):
