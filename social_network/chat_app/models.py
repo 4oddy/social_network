@@ -12,8 +12,10 @@ exposed_request: HttpRequest = HttpRequest()
 
 
 class AbstractDialog(models.Model):
+    """ Abstract dialog model """
     name = models.CharField(verbose_name='Имя', max_length=50)
-    owner = models.ForeignKey(User, verbose_name='Создатель', null=True, on_delete=models.SET_NULL)
+    owner = models.ForeignKey(User, verbose_name='Создатель',
+                              null=True, on_delete=models.SET_NULL)
     date_of_creating = models.DateTimeField(verbose_name='Дата создания', auto_now_add=True)
     uid = models.UUIDField(unique=True, editable=False, default=uuid.uuid4)
 
@@ -25,8 +27,10 @@ class AbstractDialog(models.Model):
 
 
 class AbstractMessage(models.Model):
+    """ Abstract message model """
     text = models.TextField(verbose_name='Текст сообщения')
-    sender = models.ForeignKey(User, verbose_name='Отправитель', null=True, on_delete=models.SET_NULL)
+    sender = models.ForeignKey(User, verbose_name='Отправитель',
+                               null=True, on_delete=models.SET_NULL)
     group = models.ForeignKey(AbstractDialog, null=True, on_delete=models.SET_NULL)
     date_of_sending = models.DateTimeField(verbose_name='Дата отправки', auto_now_add=True)
 
@@ -35,7 +39,9 @@ class AbstractMessage(models.Model):
 
 
 class Conservation(AbstractDialog):
-    members = models.ManyToManyField(User, verbose_name='Участники', related_name='conservations')
+    """ Conservation model """
+    members = models.ManyToManyField(User, verbose_name='Участники',
+                                     related_name='conservations')
 
     class Meta:
         verbose_name = 'Беседа'
@@ -46,23 +52,28 @@ class Conservation(AbstractDialog):
 
 
 class Dialog(AbstractDialog):
-    owner = models.ForeignKey(User, verbose_name='Первый пользователь', null=True, on_delete=models.SET_NULL,
+    """ Dialog model between two users """
+    owner = models.ForeignKey(User, verbose_name='Первый пользователь',
+                              null=True, on_delete=models.SET_NULL,
                               related_name='dialogs_first_user')
-    second_user = models.ForeignKey(User, verbose_name='Второй пользователь', null=True, on_delete=models.SET_NULL,
+    second_user = models.ForeignKey(User, verbose_name='Второй пользователь',
+                                    null=True, on_delete=models.SET_NULL,
                                     related_name='dialogs_second_user')
 
     class Meta:
         verbose_name = 'Диалог'
         verbose_name_plural = 'Диалоги'
         constraints = [
+            # prohibits dialog with yourself
             models.CheckConstraint(
                 check=~models.Q(owner=models.F('second_user')),
                 name='check_self_dialog'
-            ),  # prohibits dialog with yourself
+            ),
+            # prohibits the same dialog
             models.UniqueConstraint(
                 fields=('owner', 'second_user'),
                 name='unique_dialog'
-            )  # prohibits the same dialog
+            )
         ]
 
     def __str__(self):
@@ -89,12 +100,15 @@ class Dialog(AbstractDialog):
         return self.owner if self.owner != exposed_request.user else self.second_user
 
     def get_absolute_url(self):
-        return reverse('chat:dialog_page', kwargs={'companion_name': self.get_companion().username})
+        return reverse('chat:dialog_page',
+                       kwargs={'companion_name': self.get_companion().username})
 
 
 class ConservationMessage(AbstractMessage):
-    group = models.ForeignKey(Conservation, verbose_name='Беседа', on_delete=models.CASCADE,
-                              default=None, related_name='messages')
+    """ Message for conservations model """
+    group = models.ForeignKey(Conservation, verbose_name='Беседа',
+                              on_delete=models.CASCADE, default=None,
+                              related_name='messages')
 
     class Meta:
         verbose_name = 'Сообщение беседы'
@@ -103,8 +117,10 @@ class ConservationMessage(AbstractMessage):
 
 
 class DialogMessage(AbstractMessage):
-    group = models.ForeignKey(Dialog, verbose_name='Диалог', on_delete=models.CASCADE,
-                              default=None, related_name='messages')
+    """ Message for dialogs model """
+    group = models.ForeignKey(Dialog, verbose_name='Диалог',
+                              on_delete=models.CASCADE, default=None,
+                              related_name='messages')
 
     class Meta:
         verbose_name = 'Сообщение диалога'

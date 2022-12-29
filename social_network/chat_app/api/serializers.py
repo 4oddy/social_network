@@ -31,23 +31,12 @@ class DialogSerializer(BaseGroupSerializer):
         dialog = services.CreatorDialogs.create_group(owner=owner, second_user=second_user)
         return dialog
 
-    def validate(self, attrs):
-        owner = self.context['request'].user
-        second_user = attrs.get('second_user_id')
-
-        if services.GetterDialogs.get_group_sync(user=owner, companion=second_user):
-            raise serializers.ValidationError('Диалог уже существует')
-
-        return super().validate(attrs)
-
     def validate_second_user_id(self, value):
         user = self.context['request'].user
 
         if value == user:
             raise serializers.ValidationError('Нельзя начать диалог с собой')
 
-        if value not in user.friends.all():
-            raise serializers.ValidationError('Не в друзьях')
         return value
 
 
@@ -57,18 +46,6 @@ class ConservationSerializer(BaseGroupSerializer):
 
     class Meta(BaseGroupSerializer.BaseMeta):
         model = models.Conservation
-
-    def validate_members_id(self, value):
-        user = self.context['request'].user
-
-        not_in_friends = list(map(
-            lambda friend: friend.username,
-            filter(lambda friend: friend not in user.friends.all() and friend != user, value))
-        )
-
-        if any(not_in_friends):
-            raise serializers.ValidationError({'not_in_friends': not_in_friends})
-        return value
 
     def create(self, validated_data):
         owner = self.context['request'].user

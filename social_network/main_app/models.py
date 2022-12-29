@@ -14,6 +14,7 @@ from .validators import custom_username_validator
 
 
 class CustomUser(AbstractUser):
+    """ Custom User model for authentication """
     class Devices(models.TextChoices):
         PC = 'pc', 'Computer'
         MOBILE = 'mobile', 'Mobile'
@@ -34,7 +35,8 @@ class CustomUser(AbstractUser):
     image = models.ImageField(verbose_name='Фотография профиля', upload_to='images/user_images',
                               default=settings.DEFAULT_USER_IMAGE)
     last_online = models.DateTimeField(verbose_name='Последний онлайн', auto_now=True)
-    device = models.CharField(verbose_name='Устройство', max_length=6, choices=Devices.choices, default=Devices.PC)
+    device = models.CharField(verbose_name='Устройство', max_length=6,
+                              choices=Devices.choices, default=Devices.PC)
     friends = models.ManyToManyField('self')
 
     class Meta:
@@ -65,28 +67,33 @@ class CustomUser(AbstractUser):
 
     @property
     def is_mobile(self):
+        """ Check if user's device is mobile """
         if self.device == self.Devices.MOBILE:
             return True
         return False
 
     @staticmethod
     def in_friendship(first, second):
+        """ Check first and second users in friends """
         return first in second.friends.all() and second in first.friends.all()
 
     @classmethod
     def make_friends(cls, first_user, second_user):
+        """ Add to friendship each other """
         if not cls.in_friendship(first_user, second_user):
             first_user.friends.add(second_user)
             second_user.friends.add(first_user)
 
     @classmethod
     def delete_friends(cls, first_user, second_user):
+        """ Delete from friendship each other """
         if cls.in_friendship(first_user, second_user):
             first_user.friends.remove(second_user)
             second_user.friends.remove(first_user)
 
 
 class FriendRequest(models.Model):
+    """ Friend request model for relationship between users """
     class RequestStatuses(models.TextChoices):
         CREATED = 'c', 'CREATED'
         ACCEPTED = 'a', 'ACCEPTED'
@@ -96,8 +103,12 @@ class FriendRequest(models.Model):
                                   related_name='from_user_request', on_delete=models.CASCADE)
     to_user = models.ForeignKey(CustomUser, null=False, verbose_name='Кому',
                                 related_name='to_user_request', on_delete=models.CASCADE)
-    request_status = models.CharField(verbose_name='Статус заявки', max_length=1,
-                                      choices=RequestStatuses.choices, default=RequestStatuses.CREATED)
+
+    request_status = models.CharField(verbose_name='Статус заявки',
+                                      max_length=1,
+                                      choices=RequestStatuses.choices,
+                                      default=RequestStatuses.CREATED)
+
     date_of_request = models.DateTimeField(verbose_name='Дата заявки', auto_now_add=True)
 
     class Meta:
@@ -136,28 +147,35 @@ class FriendRequest(models.Model):
 
     def deny(self):
         """ Denies friend request """
-        if self.request_status != self.RequestStatuses.DENIED and self.request_status != self.RequestStatuses.ACCEPTED:
+        if self.request_status != self.RequestStatuses.DENIED\
+                and self.request_status != self.RequestStatuses.ACCEPTED:
             self.request_status = self.RequestStatuses.DENIED
             self.save()
 
     @staticmethod
     def find_friend_request(first_user, second_user):
         """ Find friend request related to first_user and second_user """
-        request = FriendRequest.objects.filter(models.Q(from_user=first_user) & models.Q(to_user=second_user) |
-                                               models.Q(from_user=second_user) & models.Q(to_user=first_user)).first()
+        request = FriendRequest.objects.filter(models.Q(from_user=first_user) &
+                                               models.Q(to_user=second_user) |
+                                               models.Q(from_user=second_user) &
+                                               models.Q(to_user=first_user)).first()
         return request
 
     @property
     def is_accepted(self):
+        """ Check if the request accepted """
         return self.request_status == self.RequestStatuses.ACCEPTED
 
     @property
     def is_denied(self):
+        """ Check if the request denied """
         return self.request_status == self.RequestStatuses.DENIED
 
 
 class Post(models.Model):
-    title = models.CharField(verbose_name='Заголовок', max_length=50, null=True, blank=True)
+    """ Post model for user publications """
+    title = models.CharField(verbose_name='Заголовок', max_length=50,
+                             null=True, blank=True)
     description = models.TextField(verbose_name='Текст', null=True, blank=True)
     owner = models.ForeignKey(CustomUser, verbose_name='Автор', null=False, blank=False,
                               on_delete=models.CASCADE, related_name='posts')
@@ -181,8 +199,11 @@ class Post(models.Model):
 
 
 class Comment(models.Model):
-    owner = models.ForeignKey(CustomUser, verbose_name='Владелец', related_name='comments', on_delete=models.CASCADE)
-    post = models.ForeignKey(Post, verbose_name='Пост', related_name='post_comments', on_delete=models.CASCADE)
+    """ Comment model for post """
+    owner = models.ForeignKey(CustomUser, verbose_name='Владелец',
+                              related_name='comments', on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, verbose_name='Пост',
+                             related_name='post_comments', on_delete=models.CASCADE)
     text = models.CharField(verbose_name='Текст', max_length=200)
     uid = models.UUIDField(unique=True, editable=False, default=uuid.uuid4)
 

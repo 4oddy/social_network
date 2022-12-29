@@ -23,6 +23,7 @@ def send_emails(function: Callable) -> Callable:
 
 
 def find_users(username: str) -> QuerySet:
+    """ Find users by username """
     queryset = User.objects.filter(username__icontains=username)
     return queryset
 
@@ -47,6 +48,7 @@ def get_request_info(first_user: User, second_user: User) -> dict:
     return info
 
 
+# this function lets us not to make one more query to get user from db
 def get_user_for_view(from_user: User, to_user_username: str) -> User:
     own_profile = from_user.username == to_user_username
 
