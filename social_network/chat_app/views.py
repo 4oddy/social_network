@@ -13,6 +13,8 @@ User = get_user_model()
 getter_dialogs = GetterDialogs()
 getter_conservations = GetterConservations()
 
+creator_dialogs = CreatorDialogs()
+
 
 class ConservationPage(LoginRequiredMixin, TemplateView):
     template_name = 'chat_page.html'
@@ -54,7 +56,7 @@ class DialogPage(LoginRequiredMixin, View):
         if User.in_friendship(self.request.user, second_user):
             dialog = getter_dialogs.get_group_sync(user=self.request.user, companion=second_user)
             if not dialog:
-                dialog = CreatorDialogs.create_group(owner=self.request.user, second_user=second_user)
+                dialog = creator_dialogs.create_group(owner=self.request.user, second_user=second_user)
             context['dialog'] = dialog
             context['companion'] = dialog.get_companion(user=self.request.user)
             context['messages'] = DialogMessage.objects.select_related('sender').filter(group=dialog)

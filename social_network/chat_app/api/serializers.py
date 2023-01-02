@@ -19,7 +19,10 @@ class BaseGroupSerializer(serializers.ModelSerializer):
 
 class DialogSerializer(BaseGroupSerializer):
     second_user = UserSerializer(read_only=True)
-    second_user_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), write_only=True)
+    second_user_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(),
+                                                        write_only=True)
+
+    _creator = services.CreatorDialogs()
 
     class Meta(BaseGroupSerializer.BaseMeta):
         model = models.Dialog
@@ -28,21 +31,17 @@ class DialogSerializer(BaseGroupSerializer):
     def create(self, validated_data):
         owner = self.context['request'].user
         second_user = validated_data['second_user_id']
-        dialog = services.CreatorDialogs.create_group(owner=owner, second_user=second_user)
+        dialog = self._creator.create_group(owner=owner, second_user=second_user)
         return dialog
-
-    def validate_second_user_id(self, value):
-        user = self.context['request'].user
-
-        if value == user:
-            raise serializers.ValidationError('Нельзя начать диалог с собой')
-
-        return value
 
 
 class ConservationSerializer(BaseGroupSerializer):
     members = UserSerializer(many=True, read_only=True)
-    members_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), write_only=True, many=True)
+    members_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(),
+                                                    write_only=True,
+                                                    many=True)
+
+    _creator = services.CreatorConservations()
 
     class Meta(BaseGroupSerializer.BaseMeta):
         model = models.Conservation
@@ -50,9 +49,9 @@ class ConservationSerializer(BaseGroupSerializer):
     def create(self, validated_data):
         owner = self.context['request'].user
         members = validated_data['members_id']
-        conservation = services.CreatorConservations.create_group(owner=owner,
-                                                                  name=validated_data['name'],
-                                                                  members=members)
+        conservation = self._creator.create_group(owner=owner,
+                                                  name=validated_data['name'],
+                                                  members=members)
         return conservation
 
 
@@ -88,7 +87,8 @@ class BaseCreatingMessageSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         sync_send_message = async_to_sync(self._sender.send_message)
-        message = sync_send_message(sender=self.context['request'].user, message=validated_data['text'],
+        message = sync_send_message(sender=self.context['request'].user,
+                                    message=validated_data['text'],
                                     group=self.context['group'])
         return message
 

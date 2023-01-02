@@ -3,7 +3,6 @@ import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from django.contrib.auth import get_user_model
 
-from .models import AbstractDialog, Dialog
 from .services import (AbstractGetter, AbstractSaver, GetterConservations,
                        GetterDialogs, SaverConservationMessages,
                        SaverDialogMessages, SenderMessages)
@@ -17,9 +16,9 @@ class BaseChatConsumer(AsyncWebsocketConsumer):
     _sender: SenderMessages
 
     async def connect(self):
-        self.user: str = self.scope['user']
-        self.group_uuid: str = self.scope['url_route']['kwargs']['group_uuid']
-        self.group: AbstractDialog = await self._getter.get_group(uid=self.group_uuid)
+        self.user = self.scope['user']
+        self.group_uuid = self.scope['url_route']['kwargs']['group_uuid']
+        self.group = await self._getter.get_group(uid=self.group_uuid)
         self.group_uuid = str(self.group.uid)
 
         await self.channel_layer.group_add(
@@ -38,14 +37,15 @@ class BaseChatConsumer(AsyncWebsocketConsumer):
         await self.close()
 
     async def receive(self, text_data=None, bytes_data=None):
-        data: dict = json.loads(text_data)
+        data = json.loads(text_data)
 
-        message: str = data['message']
+        message = data['message']
 
         if message:
-            sender: User = self.user
-
-            await self._sender.send_message(sender=sender, message=message, group=self.group)
+            sender = self.user
+            await self._sender.send_message(sender=sender,
+                                            message=message,
+                                            group=self.group)
 
     async def chat_message(self, event: dict):
         message = event['message']
@@ -69,9 +69,10 @@ class DialogConsumer(BaseChatConsumer):
     _sender: SenderMessages = SenderMessages(saver=_saver)
 
     async def connect(self):
-        self.user: str = self.scope['user']
-        self.group_name: str = self.scope['url_route']['kwargs']['group_name']
-        self.group: Dialog = await self._getter.get_group(companion_username=self.group_name, user=self.user)
+        self.user = self.scope['user']
+        self.group_name = self.scope['url_route']['kwargs']['group_name']
+        self.group = await self._getter.get_group(companion_username=self.group_name,
+                                                  user=self.user)
         self.group_uuid = str(self.group.uid)
 
         await self.channel_layer.group_add(

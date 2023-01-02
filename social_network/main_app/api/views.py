@@ -17,7 +17,8 @@ from . import serializers
 User = get_user_model()
 
 
-class UserView(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin):
+class UserView(viewsets.GenericViewSet, mixins.ListModelMixin,
+               mixins.CreateModelMixin, mixins.RetrieveModelMixin):
     queryset = User.objects.all()
 
     def get_object(self):
@@ -30,7 +31,8 @@ class UserView(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateMode
             permissions.AllowAny,
         ]
 
-        if self.action in ('update_user', 'delete_profile_image', 'friends', 'retrieve', 'list'):
+        if self.action in ('update_user', 'delete_profile_image',
+                           'friends', 'retrieve', 'list'):
             permission_classes = [permissions.IsAuthenticated]
         return [permission() for permission in permission_classes]
 
@@ -41,7 +43,8 @@ class UserView(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateMode
 
     @action(detail=False, methods=['PUT', 'PATCH'], url_name='update_user')
     def update_user(self, request):
-        serializer = self.get_serializer(instance=request.user, data=request.data)
+        serializer = self.get_serializer(instance=request.user,
+                                         data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         send_email_changed_settings(request.user)
@@ -53,7 +56,8 @@ class UserView(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateMode
             request.user.image = settings.DEFAULT_USER_IMAGE
             request.user.save()
             return Response({'success': True})
-        return Response({'success': False}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'success': False},
+                        status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=['GET'], url_name='friends')
     def friends(self, request, pk=None):
@@ -70,14 +74,16 @@ class FriendRequestView(viewsets.GenericViewSet, mixins.CreateModelMixin, mixins
         send_friend_request_email(from_user=obj.from_user, to_user=obj.to_user)
 
     def get_queryset(self):
-        queryset = FriendRequest.objects.filter(Q(from_user=self.request.user) | Q(to_user=self.request.user))
+        queryset = FriendRequest.objects.filter(Q(from_user=self.request.user)
+                                                | Q(to_user=self.request.user))
         return queryset
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
 
         if instance.request_status == instance.RequestStatuses.ACCEPTED:
-            delete_from_friendship(first=instance.from_user, second=instance.to_user)
+            delete_from_friendship(first=instance.from_user,
+                                   second=instance.to_user)
         else:
             if request.user == instance.from_user:
                 self.perform_destroy(instance)
@@ -101,7 +107,9 @@ class FriendRequestView(viewsets.GenericViewSet, mixins.CreateModelMixin, mixins
         if not friend_request.is_accepted:
             friend_request.accept()
             return Response(status=status.HTTP_200_OK)
-        return Response(status=status.HTTP_400_BAD_REQUEST, data={'error': 'Заявка уже принята'})
+
+        return Response(status=status.HTTP_400_BAD_REQUEST,
+                        data={'error': 'Заявка уже принята'})
 
     @action(detail=True, methods=['GET'], url_name='deny')
     def deny(self, request, pk=None):
@@ -110,7 +118,9 @@ class FriendRequestView(viewsets.GenericViewSet, mixins.CreateModelMixin, mixins
         if not friend_request.is_denied and not friend_request.is_accepted:
             friend_request.deny()
             return Response(status=status.HTTP_200_OK)
-        return Response(status=status.HTTP_400_BAD_REQUEST, data={'error': 'Заявка уже отклонена или принята'})
+
+        return Response(status=status.HTTP_400_BAD_REQUEST,
+                        data={'error': 'Заявка уже отклонена или принята'})
 
 
 class PostView(viewsets.ModelViewSet):
@@ -133,17 +143,20 @@ class PostView(viewsets.ModelViewSet):
 
     def get_queryset(self):
         if self.action == 'comments':
-            return Comment.objects.select_related('owner', 'post').filter(post=self.kwargs['pk'])
+            return Comment.objects.select_related('owner', 'post').\
+                filter(post=self.kwargs['pk'])
         return Post.objects.select_related('owner').all()
 
     @action(detail=False, methods=['GET'], url_name='friends_posts')
     def friends_posts(self, request):
-        serializer = self.get_serializer(self.get_queryset().friends_posts(request.user), many=True)
+        serializer = self.get_serializer(self.get_queryset().
+                                         friends_posts(request.user), many=True)
         return Response(serializer.data)
 
     @action(detail=False, methods=['GET'], url_name='user_posts')
     def user_posts(self, request):
-        serializer = self.get_serializer(self.get_queryset().get_posts(request.user), many=True)
+        serializer = self.get_serializer(self.get_queryset().
+                                         get_posts(request.user), many=True)
         return Response(serializer.data)
 
     @action(detail=True, methods=['GET'], url_name='comments')

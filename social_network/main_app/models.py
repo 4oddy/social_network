@@ -155,10 +155,10 @@ class FriendRequest(models.Model):
     @staticmethod
     def find_friend_request(first_user, second_user):
         """ Find friend request related to first_user and second_user """
-        request = FriendRequest.objects.filter(models.Q(from_user=first_user) &
-                                               models.Q(to_user=second_user) |
-                                               models.Q(from_user=second_user) &
-                                               models.Q(to_user=first_user)).first()
+        request = FriendRequest.objects.filter(models.Q(from_user=first_user)
+                                               & models.Q(to_user=second_user)
+                                               | models.Q(from_user=second_user)
+                                               & models.Q(to_user=first_user)).first()
         return request
 
     @property

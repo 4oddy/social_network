@@ -7,14 +7,14 @@ from django.db.models import Q, QuerySet
 
 from core.utils import get_current_date
 
-from .exceptions import DialogExistsException, NotInFriendsException
+from .exceptions import DialogExistsError, NotInFriendsError, SelfDialogError
 from .models import (AbstractDialog, AbstractMessage, Conservation,
                      ConservationMessage, Dialog, DialogMessage)
 
 User = get_user_model()
 
 
-def check_not_friends(user: User, checking_value: list[User]) -> list[str]:
+def _check_not_friends(user: User, checking_value: list[User]) -> list[str]:
     """ Check what people from checking_value are not in friends with user """
     not_in_friends = list(map(
         lambda not_friend: not_friend.username,
@@ -33,54 +33,16 @@ class AbstractGetter(ABC):
         pass
 
 
-class AbstractSaver(ABC):
-    @abstractmethod
-    async def save_message(self, user: User, message: str, group: AbstractDialog) -> AbstractMessage:
-        pass
-
-
 class AbstractCreatorGroups(ABC):
     @abstractmethod
     def create_group(self, **kwargs):
         pass
 
 
-class CreatorConservations(AbstractCreatorGroups):
-    @staticmethod
-    def create_group(**kwargs) -> Conservation:
-        """ Create conservation """
-        owner = kwargs.get('owner')
-        members = kwargs.pop('members', None)
-
-        if members is not None:
-            not_in_friends = check_not_friends(owner, members)
-
-            if any(not_in_friends):
-                raise NotInFriendsException(not_in_friends)
-
-            if owner not in members:
-                members.append(owner)
-
-        conservation = Conservation.objects.create(**kwargs)
-        conservation.members.set(members)
-        return conservation
-
-
-class CreatorDialogs(AbstractCreatorGroups):
-    @staticmethod
-    def create_group(owner: User, second_user: User) -> Dialog:
-        """ Create dialog between owner and second_user
-            The name of the dialog will be second_user.username
-        """
-        if not User.in_friendship(owner, second_user):
-            raise NotInFriendsException(second_user)
-
-        if GetterDialogs.get_group_sync(user=owner, companion=second_user):
-            raise DialogExistsException()
-
-        return Dialog.objects.create(owner=owner,
-                                     name=second_user.username,
-                                     second_user=second_user)
+class AbstractSaver(ABC):
+    @abstractmethod
+    async def save_message(self, user: User, message: str, group: AbstractDialog) -> AbstractMessage:
+        pass
 
 
 class GetterConservations(AbstractGetter):
@@ -99,31 +61,84 @@ class GetterConservations(AbstractGetter):
 
 class GetterDialogs(AbstractGetter):
     """ Class to manage logic of getting dialogs"""
-    @staticmethod
-    def get_group_sync(user: User,
+
+    dialogs = Dialog.objects.select_related('owner', 'second_user')
+
+    def get_group_sync(self, user: User,
                        companion: User | None = None,
                        companion_username: str | None = None) -> Dialog | None:
+
         # search by companion id
         if companion:
-            dialog = Dialog.objects.select_related('owner', 'second_user').filter(
-                Q(owner=user) & Q(name=companion.username) & Q(second_user=companion) |
-                Q(owner=companion) & Q(name=user.username) & Q(second_user=user)).first()
+            dialog = self.dialogs.filter(
+                Q(owner=user)
+                & Q(name=companion.username)
+                & Q(second_user=companion)
+                | Q(owner=companion)
+                & Q(name=user.username)
+                & Q(second_user=user)).first()
 
         # search by companion username
         elif companion_username:
-            dialog = Dialog.objects.select_related('owner', 'second_user').filter(
-                Q(owner=user) & Q(name=companion_username) & Q(second_user__username=companion_username) |
-                Q(owner__username=companion_username) & Q(name=user.username) & Q(second_user=user)).first()
+            dialog = self.dialogs.filter(
+                Q(owner=user)
+                & Q(name=companion_username)
+                & Q(second_user__username=companion_username)
+                | Q(owner__username=companion_username)
+                & Q(name=user.username)
+                & Q(second_user=user)).first()
         else:
             raise TypeError('You have to define companion or companion_username')
 
         return dialog
 
     def get_user_groups(self, user: User) -> QuerySet[Dialog]:
-        dialogs = Dialog.objects.select_related('owner', 'second_user').filter(Q(owner=user) | Q(second_user=user))
+        dialogs = self.dialogs.filter(Q(owner=user) | Q(second_user=user))
         return dialogs
 
-    get_group = staticmethod(sync_to_async(get_group_sync))
+    get_group = sync_to_async(get_group_sync)
+
+
+class CreatorConservations(AbstractCreatorGroups):
+    @staticmethod
+    def create_group(**kwargs) -> Conservation:
+        """ Create conservation """
+        owner = kwargs.get('owner')
+        members = kwargs.pop('members', None)
+
+        if members is not None:
+            not_in_friends = _check_not_friends(owner, members)
+
+            if any(not_in_friends):
+                raise NotInFriendsError(not_in_friends)
+
+            if owner not in members:
+                members.append(owner)
+
+        conservation = Conservation.objects.create(**kwargs)
+        conservation.members.set(members)
+        return conservation
+
+
+class CreatorDialogs(AbstractCreatorGroups):
+    _getter = GetterDialogs()
+
+    def create_group(self, owner: User, second_user: User) -> Dialog:
+        """ Create dialog between owner and second_user
+            The name of the dialog will be second_user.username
+        """
+        if owner == second_user:
+            raise SelfDialogError()
+
+        if not User.in_friendship(owner, second_user):
+            raise NotInFriendsError(second_user)
+
+        if self._getter.get_group_sync(user=owner, companion=second_user):
+            raise DialogExistsError()
+
+        return Dialog.objects.create(owner=owner,
+                                     name=second_user.username,
+                                     second_user=second_user)
 
 
 class SaverConservationMessages(AbstractSaver):
@@ -152,13 +167,8 @@ class SenderMessages:
         self._channel_layer = get_channel_layer()
 
     async def send_message(self, sender: User, message: str, group: AbstractDialog) -> AbstractMessage:
-        """ This method sends message to current channel layer """
-        sender_dict = {
-            'username': sender.username,
-            'image_url': sender.image.url,
-            'profile_url': sender.get_absolute_url(),
-            'date': get_current_date()
-        }
+        """ Method sends message to current channel layer """
+        sender_dict = self._generate_data_for_sending(sender)
 
         group_uuid = str(group.uid)
 
@@ -174,3 +184,14 @@ class SenderMessages:
         )
 
         return message_instance
+
+    @staticmethod
+    def _generate_data_for_sending(sender: User) -> dict:
+        """ Method to generate data which will be sent to frontend """
+        data = {
+            'username': sender.username,
+            'image_url': sender.image.url,
+            'profile_url': sender.get_absolute_url(),
+            'date': get_current_date()
+        }
+        return data
