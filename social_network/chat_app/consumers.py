@@ -19,7 +19,6 @@ class BaseChatConsumer(AsyncWebsocketConsumer):
         self.user = self.scope['user']
         self.group_uuid = self.scope['url_route']['kwargs']['group_uuid']
         self.group = await self._getter.get_group(uid=self.group_uuid)
-        self.group_uuid = str(self.group.uid)
 
         await self.channel_layer.group_add(
             self.group_uuid,

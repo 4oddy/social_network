@@ -5,6 +5,7 @@ User = get_user_model()
 
 
 class TelegramUser(models.Model):
+    """ Model of telegram user which can be related to default user model """
     telegram_id = models.IntegerField(verbose_name='ID', null=False)
     account = models.OneToOneField(User, verbose_name='Аккаунт', null=True, related_name='telegram_profile',
                                    on_delete=models.CASCADE)

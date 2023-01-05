@@ -25,7 +25,7 @@ def _check_not_friends(user: User, checking_value: list[User]) -> list[str]:
 
 class AbstractGetter(ABC):
     @abstractmethod
-    async def get_group(self, *args, **kwargs) -> AbstractDialog:
+    async def get_group(self, *args, **kwargs) -> AbstractDialog | None:
         pass
 
     @abstractmethod
@@ -170,12 +170,10 @@ class SenderMessages:
         """ Method sends message to current channel layer """
         sender_dict = self._generate_data_for_sending(sender)
 
-        group_uuid = str(group.uid)
-
         message_instance = await self._saver.save_message(user=sender, message=message, group=group)
 
         await self._channel_layer.group_send(
-            group_uuid,
+            str(group.uid),
             {
                 'type': 'chat_message',
                 'message': message,

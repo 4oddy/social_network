@@ -12,6 +12,8 @@ User = get_user_model()
 class BaseGroupSerializer(serializers.ModelSerializer):
     owner = UserSerializer(read_only=True)
 
+    _creator: services.AbstractCreatorGroups
+
     class BaseMeta:
         model = models.AbstractDialog
         fields = '__all__'
