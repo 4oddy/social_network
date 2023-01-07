@@ -35,7 +35,9 @@ class BaseTestDialogs(BaseTestGroups):
 class BaseTestConservations(BaseTestGroups):
     @staticmethod
     def create_group(name, owner, members):
-        return Conservation.objects.create(name=name, owner=owner, members=members)
+        conservation = Conservation.objects.create(name=name, owner=owner)
+        conservation.members.set(members)
+        return conservation
 
     @staticmethod
     def send_message(sender, text, group):
