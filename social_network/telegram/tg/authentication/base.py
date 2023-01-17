@@ -1,15 +1,16 @@
 from typing import Any, Callable, Optional
 
-from django.contrib.auth import authenticate
 from telebot import TeleBot
 
-from ...models import TelegramUser
+from telegram.tg.tokens import verify_authentication_token
+from telegram.models import TelegramUser
 
 
 class TelegramAuthentication:
-    _function: Optional[Callable] = None
+    _wrapping: Optional[Callable] = None
 
-    _not_authenticated_msg = 'Вы не авторизованы, используйте /auth [username] [password] для авторизации'
+    _authenticate_command = '/auth [token]'
+    _not_authenticated_msg = f'Вы не авторизованы, используйте {_authenticate_command} для авторизации'
     _auth_success_msg = 'Авторизация успешна'
     _auth_failed_msg = 'Авторизация провалена'
 
@@ -17,13 +18,14 @@ class TelegramAuthentication:
         self.bot = bot
         self.auth = self.bot.message_handler(commands=['auth'])(self._auth)
         self.commands = self.bot.message_handler(commands=['start', 'help'])(self._commands)
-        self.commands_list = ['/auth [username] [password] - авторизация', ]
+        self.commands_list = [f'{self._authenticate_command} - авторизация', ]
 
     def basic_authentication(self, function: Callable) -> Callable:
-        self._function = function
+        self._wrapping = function
         return self._login_required
 
-    def add_command(self, command: str) -> str:
+    def add_command(self, command: str, meaning: str) -> str:
+        command = f'/{command} - {meaning}'
         self.commands_list.append(command)
         return command
 
@@ -45,7 +47,7 @@ class TelegramAuthentication:
         if not user.is_authenticated:
             self.bot.reply_to(message, self._not_authenticated_msg)
         else:
-            self._function(message, user, *args, **kwargs)
+            self._wrapping(message, user, *args, **kwargs)
 
     @staticmethod
     def _get_or_create_user(user_id: int) -> TelegramUser:
@@ -53,13 +55,9 @@ class TelegramAuthentication:
         return obj
 
     def _auth_by_django(self, message: Any) -> None:
-        username, password = message.text.split()[1:]
-        user = authenticate(username=username, password=password)
+        token = message.text.split()[1]
+        tg_user = self._get_or_create_user(message.from_user.id)
 
-        if user is not None:
-            tg_user = self._get_or_create_user(message.from_user.id)
-            tg_user.account = user
-            tg_user.save()
-            self.bot.reply_to(message, self._auth_success_msg)
-        else:
-            raise Exception()
+        verify_authentication_token(token, tg_user)
+
+        self.bot.reply_to(message, self._auth_success_msg)

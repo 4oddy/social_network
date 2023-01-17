@@ -27,5 +27,15 @@
         <button class="btn btn-success">Применить</button>
     </form>
 </div>
+<br>
+
+<p align="center">
+    {% if not request.user.telegram_profile %}
+<a href="{% url 'telegram:generate_token' %}" style="color: #0B66E3; text-decoration: none;">Сгенерировать токен для Telegram </a>
+    {% else %}
+        Аккаунт привзан к {{ request.user.telegram_profile.telegram_id }}
+    {% endif %}
+    </p>
+
 <script src="{% static 'js/delete_user_image.js' %}"></script>
 {% endblock %}

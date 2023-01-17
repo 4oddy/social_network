@@ -25,9 +25,11 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     path('', RedirectView.as_view(url='main/')),
+
     path('admin/', admin.site.urls),
     path('main/', include('main_app.urls')),
     path('chat/', include('chat_app.urls')),
+    path('telegram/', include('telegram.urls')),
 
     path('captcha/', include('captcha.urls')),
 
