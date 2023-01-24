@@ -45,5 +45,5 @@ def verify_authentication_token(token: str, tg_user: TelegramUser) -> None:
     if user and telegram_token_generator.check_token(user, token):
         tg_user.account = user
         tg_user.save()
-
-    raise TelegramAuthenticationFailedError()
+    else:
+        raise TelegramAuthenticationFailedError('Authentication failed')
