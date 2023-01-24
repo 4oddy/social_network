@@ -1,9 +1,10 @@
 import base64
 
-from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.contrib.auth import get_user_model
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
 
 from telegram.models import TelegramUser
+
 from .exceptions import TelegramAuthenticationFailedError
 
 User = get_user_model()

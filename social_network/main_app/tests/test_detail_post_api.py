@@ -17,11 +17,7 @@ class TestDetailPostAPI(BaseTestPost,
 
     @staticmethod
     def build_comments_url(pk):
-        return reverse('main:posts-comments', args=[pk])
-
-    @staticmethod
-    def build_leave_comment_url(pk):
-        return reverse('main:posts-leave_comment', args=[pk])
+        return reverse('main:comments-list', args=[pk])
 
     def test_detail_unauthorized(self):
         response = self.client.get(self.build_url(self.post.pk))
@@ -38,12 +34,12 @@ class TestDetailPostAPI(BaseTestPost,
         self.assertEqual(len(response.json()), 0)
 
     def test_detail_leave_comment(self):
-        response = self.client_auth.post(self.build_leave_comment_url(self.post.pk), data={'text': 'test'})
+        response = self.client_auth.post(self.build_comments_url(self.post.pk), data={'text': 'test'})
         self.assert_status_equal(response, status.HTTP_201_CREATED)
         self.assertTrue(self.user.username == response.json()['owner']['username'])
 
     def test_detail_comment_exists(self):
-        self.client_auth.post(self.build_leave_comment_url(self.post.pk), data={'text': 'test'})
+        self.client_auth.post(self.build_comments_url(self.post.pk), data={'text': 'test'})
 
         response = self.client_auth.get(self.build_comments_url(self.post.pk))
         self.assert_status_equal(response, status.HTTP_200_OK)

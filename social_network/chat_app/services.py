@@ -160,14 +160,14 @@ class SaverDialogMessages(AbstractSaver):
 
 
 class SenderMessages:
-    """ Class to manage logic of sending messages """
+    """ Class to manage logic of sending websocket messages """
 
     def __init__(self, saver: AbstractSaver):
         self._saver = saver
         self._channel_layer = get_channel_layer()
 
     async def send_message(self, sender: User, message: str, group: AbstractDialog) -> AbstractMessage:
-        """ Method sends message to current channel layer """
+        """ Send message to certain group (Dialog or Conservation) """
         sender_dict = self._generate_data_for_sending(sender)
 
         message_instance = await self._saver.save_message(user=sender, message=message, group=group)
@@ -185,7 +185,7 @@ class SenderMessages:
 
     @staticmethod
     def _generate_data_for_sending(sender: User) -> dict:
-        """ Method to generate data which will be sent to frontend """
+        """ Generate data which will be sent to frontend """
         data = {
             'username': sender.username,
             'image_url': sender.image.url,

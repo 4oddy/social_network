@@ -13,7 +13,10 @@ sender_notifies = SenderNotifiesAggregator([EmailSenderNotifies(), TelegramSende
 @app.task
 def send_email(subject: str, body: str, to: int) -> None:
     """ Simple sending email """
-    sender_notifies.send_notify(subject=subject, body=body, to=to)
+    receiver = User.objects.filter(pk=to).first()
+
+    if receiver is not None:
+        sender_notifies.send_notify(subject=subject, body=body, to=receiver)
 
 
 @app.task

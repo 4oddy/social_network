@@ -74,7 +74,6 @@ class ConservationMessageSerializer(BaseMessageSerializer):
 
 
 class BaseCreatingMessageSerializer(serializers.ModelSerializer):
-    _saver: services.AbstractSaver
     _sender: services.SenderMessages
 
     class BaseMeta:
@@ -96,16 +95,14 @@ class BaseCreatingMessageSerializer(serializers.ModelSerializer):
 
 
 class CreateDialogMessageSerializer(BaseCreatingMessageSerializer):
-    _saver = services.SaverDialogMessages()
-    _sender = services.SenderMessages(saver=_saver)
+    _sender = services.SenderMessages(saver=services.SaverDialogMessages())
 
     class Meta(BaseCreatingMessageSerializer.BaseMeta):
         model = models.DialogMessage
 
 
 class CreateConservationMessageSerializer(BaseCreatingMessageSerializer):
-    _saver = services.SaverConservationMessages()
-    _sender = services.SenderMessages(saver=_saver)
+    _sender = services.SenderMessages(saver=services.SaverConservationMessages())
 
     class Meta(BaseCreatingMessageSerializer.BaseMeta):
         model = models.ConservationMessage

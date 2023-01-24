@@ -3,16 +3,15 @@ import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from django.contrib.auth import get_user_model
 
-from .services import (AbstractGetter, AbstractSaver, GetterConservations,
-                       GetterDialogs, SaverConservationMessages,
-                       SaverDialogMessages, SenderMessages)
+from .services import (AbstractGetter, GetterConservations, GetterDialogs,
+                       SaverConservationMessages, SaverDialogMessages,
+                       SenderMessages)
 
 User = get_user_model()
 
 
 class BaseChatConsumer(AsyncWebsocketConsumer):
     _getter: AbstractGetter
-    _saver: AbstractSaver
     _sender: SenderMessages
 
     async def connect(self):
@@ -58,14 +57,12 @@ class BaseChatConsumer(AsyncWebsocketConsumer):
 
 class ConservationConsumer(BaseChatConsumer):
     _getter: GetterConservations = GetterConservations()
-    _saver: SaverConservationMessages = SaverConservationMessages()
-    _sender: SenderMessages = SenderMessages(saver=_saver)
+    _sender: SenderMessages = SenderMessages(saver=SaverConservationMessages())
 
 
 class DialogConsumer(BaseChatConsumer):
     _getter: GetterDialogs = GetterDialogs()
-    _saver: SaverDialogMessages = SaverDialogMessages()
-    _sender: SenderMessages = SenderMessages(saver=_saver)
+    _sender: SenderMessages = SenderMessages(saver=SaverDialogMessages())
 
     async def connect(self):
         self.user = self.scope['user']

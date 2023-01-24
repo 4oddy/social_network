@@ -2,8 +2,8 @@ from typing import Any, Callable, Optional
 
 from telebot import TeleBot
 
-from telegram.tg.tokens import verify_authentication_token
 from telegram.models import TelegramUser
+from telegram.tg.tokens import verify_authentication_token
 
 
 class TelegramAuthentication:
