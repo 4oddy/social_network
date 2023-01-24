@@ -33,9 +33,9 @@ def generate_authentication_token(user: User) -> str:
     return token
 
 
-def verify_authentication_token(token: str, tg_user: TelegramUser) -> bool:
+def verify_authentication_token(token: str, tg_user: TelegramUser) -> None:
     """ Verifies and binds user to telegram profile
-        if succeeded, returns True, else False
+        if succeeded, returns None else raises TelegramAuthenticationFailedError
     """
     pk64, token = token.split('_')
     pk = base64.urlsafe_b64decode(pk64).decode()
@@ -45,5 +45,5 @@ def verify_authentication_token(token: str, tg_user: TelegramUser) -> bool:
     if user and telegram_token_generator.check_token(user, token):
         tg_user.account = user
         tg_user.save()
-        return True
+
     raise TelegramAuthenticationFailedError()
