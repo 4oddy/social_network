@@ -55,6 +55,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'core.authentication.jwt.CustomJWTAuthentication'
     ],
+    'EXCEPTION_HANDLER': 'core.exception_handler.custom_exception_handler',
 }
 
 # JWT

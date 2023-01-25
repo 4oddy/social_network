@@ -110,7 +110,7 @@ class CreatorConservations(AbstractCreatorGroups):
             not_in_friends = _check_not_friends(owner, members)
 
             if any(not_in_friends):
-                raise NotInFriendsError(not_in_friends)
+                raise NotInFriendsError({'Не в друзьях': not_in_friends})
 
             if owner not in members:
                 members.append(owner)
@@ -131,7 +131,7 @@ class CreatorDialogs(AbstractCreatorGroups):
             raise SelfDialogError()
 
         if not User.in_friendship(owner, second_user):
-            raise NotInFriendsError(second_user)
+            raise NotInFriendsError()
 
         if self._getter.get_group_sync(user=owner, companion=second_user):
             raise DialogExistsError()
