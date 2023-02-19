@@ -13,3 +13,4 @@ social_network/.env.docker.prod
 social_network/mydatabase
 social_network/logging/debug/**
 social_network/logging/info/**
+social_network/static_files/**
