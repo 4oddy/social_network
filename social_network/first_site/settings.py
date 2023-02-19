@@ -20,7 +20,7 @@ DEBUG = True
 SEND_EMAILS = True
 
 ALLOWED_HOSTS = ['*']
-
+CSRF_TRUSTED_ORIGINS = ['http://192.168.35.128']
 
 # Application definition
 
@@ -194,7 +194,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
 STATIC_URL = '/staticfiles/'
-STATIC_ROOT = '/static/'
+STATIC_ROOT = BASE_DIR / 'static_files'
 
 STATICFILES_DIRS = [
     BASE_DIR / 'static'

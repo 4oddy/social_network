@@ -1,0 +1,31 @@
+#post {
+    max-height: 100%;
+}
+
+.container {
+    margin: 0 auto;
+    border-radius: 10px;
+    background-color: white;
+    width: 1200px;
+    height: 350px;
+    max-height: 500px;
+}
+
+.user_img {
+    width: 320px;
+    height: 300px;
+    padding-left: 20px;
+    padding-right:20px;
+    border-radius: 20px;
+}
+
+.user_info {
+    font-family: 'Arimo', sans-serif;
+}
+
+.online_p {
+    color: green;
+}
+
+.add_to_friends {
+}

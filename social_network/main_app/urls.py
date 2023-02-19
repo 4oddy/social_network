@@ -1,9 +1,8 @@
 from django.contrib.auth.views import (LogoutView, PasswordResetConfirmView,
                                        PasswordResetDoneView,
                                        PasswordResetView)
-from django.urls import include, path, reverse_lazy
+from django.urls import path, reverse_lazy
 
-from .api import routers
 from .forms import CustomPasswordResetForm
 from .views import (AcceptFriendRequest, CancelFriendRequest, CreateComment,
                     CreateFriendRequest, CreatePost, CustomLoginPage,
@@ -56,6 +55,4 @@ urlpatterns = [
     path('posts/<slug:post_uuid>/delete/', DeletePostPage.as_view(), name='delete_post_page'),
     path('posts/<slug:post_uuid>/edit/', EditPostPage.as_view(), name='edit_post_page'),
     path('posts/<slug:post_uuid>/create_comment/', CreateComment.as_view(), name='create_comment'),
-
-    path('api/v1/', include(routers.router.urls))
 ]

@@ -1,0 +1,20 @@
+.container {
+	background-color: white;
+    border-radius: 10px;
+    padding-bottom: 20px;
+    margin: 0 auto;
+    width: 800px;
+}
+
+.friend_image {
+    width: 100px;
+    height: 100px;
+    border-radius: 100px;
+}
+
+a:hover,
+a:active,
+a {
+    color: black;
+    text-decoration: none;
+}

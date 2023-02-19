@@ -1,0 +1,12 @@
+version: '3.9'
+
+services:
+  web:
+    build: ./social_network
+    command: gunicorn -c gunicorn_config.py first_site.wsgi
+    volumes:
+      - ./social_network/:/app/
+    ports:
+      - 8001:8001
+    env_file:
+      - ./social_network/test.env
