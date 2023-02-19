@@ -3,10 +3,30 @@ version: '3.9'
 services:
   web:
     build: ./social_network
-    command: gunicorn -c gunicorn_config.py first_site.wsgi
+    command: gunicorn -c gunicorn_config_docker.py first_site.wsgi
     volumes:
       - ./social_network/:/app/
     ports:
-      - 8001:8001
+      - "8001:8001"
     env_file:
-      - ./social_network/test.env
+      - ./social_network/.env.docker
+    depends_on:
+      - db
+  db:
+    image: postgres:15-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - ./social_network/.env.db
+  rabbitmq:
+    build: ./social_network
+    container_name: rabbitmq
+    image: rabbitmq:3.9-alpine
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq/data/
+    ports:
+      - "5762:5762"
+
+volumes:
+  postgres_data:
+  rabbitmq_data:
