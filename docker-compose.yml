@@ -2,30 +2,52 @@ version: '3.9'
 
 services:
   web:
+    container_name: web
     build: ./social_network
-    command: gunicorn -c gunicorn_config_docker.py first_site.wsgi
+    command: bash -c "chmod +x ./start_backend.sh && ./start_backend.sh"
     volumes:
       - ./social_network/:/app/
     ports:
       - "8001:8001"
     env_file:
-      - ./social_network/.env.docker
+      - ./social_network/.env.docker.prod
     depends_on:
       - db
+
   db:
+    container_name: db
     image: postgres:15-alpine
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     env_file:
       - ./social_network/.env.db
+
   rabbitmq:
-    build: ./social_network
     container_name: rabbitmq
-    image: rabbitmq:3.9-alpine
+    image: rabbitmq:3-management-alpine
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq/data/
     ports:
       - "5762:5762"
+
+  celery_worker:
+    container_name: celery_worker
+    build: ./social_network
+    env_file: ./social_network/.env.docker.prod
+    command: celery -A first_site worker --loglevel info
+    depends_on:
+      - rabbitmq
+
+  nginx:
+    container_name: nginx
+    build: ./nginx-server
+    ports:
+      - "8000:80"
+    depends_on:
+      - web
+    volumes:
+      - ./social_network/static_files:/static
+      - ./social_network/:/app
 
 volumes:
   postgres_data:
