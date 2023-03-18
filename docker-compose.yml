@@ -13,6 +13,7 @@ services:
       - ./social_network/.env.docker.prod
     depends_on:
       - db
+      - redis
 
   db:
     container_name: db
@@ -29,6 +30,29 @@ services:
       - rabbitmq_data:/var/lib/rabbitmq/data/
     ports:
       - "5762:5762"
+
+  redis:
+    container_name: redis
+    image: redis
+    volumes:
+      - redis_data:/var/lib/redis/data/
+    ports:
+      - "6379:6379"
+
+  daphne:
+    container_name: daphne
+    build: ./social_network
+    command: daphne -b 0.0.0.0 -p 8002 first_site.asgi:application
+    ports:
+      - "8002:8002"
+    environment:
+      - REDIS_HOST=redis
+    volumes:
+      - ./social_network/:/app/
+    depends_on:
+      - redis
+    links:
+      - redis
 
   celery_worker:
     container_name: celery_worker
@@ -52,3 +76,4 @@ services:
 volumes:
   postgres_data:
   rabbitmq_data:
+  redis_data:
