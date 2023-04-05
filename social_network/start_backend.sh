@@ -1,5 +1,5 @@
 # apply migrations
-python "./manage.py" migrate
+python "./manage.py" migrate &&
 
 # collect static into dir
 python "./manage.py" collectstatic
