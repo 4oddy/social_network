@@ -43,8 +43,6 @@ services:
     container_name: daphne
     build: ./social_network
     command: daphne -b 0.0.0.0 -p 8002 first_site.asgi:application
-    ports:
-      - "8002:8002"
     environment:
       - REDIS_HOST=redis
     volumes:
@@ -66,7 +64,7 @@ services:
     container_name: nginx
     build: ./nginx-server
     ports:
-      - "8000:80"
+      - "192.168.50.217:8000:80"
     depends_on:
       - web
     volumes:
