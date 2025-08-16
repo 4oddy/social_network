@@ -8,9 +8,9 @@ social_network/images/user_images/**
 
 __pycache__/
 
+*.log
 social_network/test.env
 social_network/.env.docker.prod
 social_network/mydatabase
-social_network/logging/**
 social_network/static_files/**
 

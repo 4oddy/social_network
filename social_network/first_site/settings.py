@@ -16,8 +16,8 @@ dotenv.load_dotenv(BASE_DIR / '.env.docker.prod')
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG')
-SEND_EMAILS = os.environ.get('SEND_EMAILS')
+DEBUG = int(os.environ.get('DEBUG'))
+SEND_EMAILS = int(os.environ.get('SEND_EMAILS'))
 
 ALLOWED_HOSTS = ['*']
 CSRF_TRUSTED_ORIGINS = ['http://192.168.35.128']
