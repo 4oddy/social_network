@@ -16,7 +16,7 @@ dotenv.load_dotenv(BASE_DIR / '.env.docker.prod')
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG')
 SEND_EMAILS = True
 
 ALLOWED_HOSTS = ['*']
