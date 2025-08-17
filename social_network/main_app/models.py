@@ -177,6 +177,7 @@ class Post(models.Model):
     title = models.CharField(verbose_name='Заголовок', max_length=50,
                              null=True, blank=True)
     description = models.TextField(verbose_name='Текст', null=True, blank=True)
+    image = models.ImageField(verbose_name='Изображение', null=True, blank=True, upload_to='images/post_images', default=None)
     owner = models.ForeignKey(CustomUser, verbose_name='Автор', null=False, blank=False,
                               on_delete=models.CASCADE, related_name='posts')
     post_uuid = models.UUIDField(unique=True, editable=False, default=uuid.uuid4)
@@ -194,8 +195,17 @@ class Post(models.Model):
         return reverse('main:post_page', kwargs={'post_uuid': self.post_uuid})
 
     def clean(self):
-        if not self.title and not self.description:
+        if self._is_empty():
             raise ValidationError('Пост не может быть пустым')
+
+    def _is_empty(self) -> bool:
+        """ Check if post is empty """
+        if any(self._get_main_fields()):
+            return False
+        return True
+
+    def _get_main_fields(self) -> list:
+        return [self.title, self.description, self.image]
 
 
 class Comment(models.Model):

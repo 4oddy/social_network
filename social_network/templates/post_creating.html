@@ -20,7 +20,7 @@
   background-color: white;
   border-radius: 10px;">
         <br>
-        <form method="post" style="max-width: 350px; width: 350px;"> {% csrf_token %}
+        <form method="post" style="max-width: 350px; width: 350px;" enctype='multipart/form-data'> {% csrf_token %}
             {{ form | crispy }}
             <br>
             <button type="submit" class="btn btn-success" style="

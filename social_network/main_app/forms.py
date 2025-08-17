@@ -61,16 +61,18 @@ class UserSettingsForm(forms.ModelForm):
         fields = ('first_name', 'last_name', 'image')
 
 
-class PostCreatingForm(BaseForm):
+class PostCreatingForm(forms.ModelForm):
+    image = forms.ImageField(label='Изображение', widget=forms.FileInput, required=False)
+
     class Meta:
         model = Post
-        fields = ('title', 'description')
+        fields = ('title', 'description', 'image')
 
 
 class PostEditingForm(forms.ModelForm):
     class Meta:
         model = Post
-        fields = ('title', 'description')
+        fields = ('title', 'description', 'image')
 
 
 class CustomPasswordResetForm(PasswordResetForm):
