@@ -295,6 +295,7 @@ if DEBUG:
 
     DEBUG_TOOLBAR_CONFIG = {
         'INTERCEPT_REDIRECTS': False,
+        'SHOW_TOOLBAR_CALLBACK': lambda request: True if DEBUG else False
     }
 
     INSTALLED_APPS += [
